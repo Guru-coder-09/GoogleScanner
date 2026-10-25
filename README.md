@@ -1,11 +1,11 @@
-# ✨ NeatWorkspace: Intelligent Google Workspace & Cloud Photos Automation
+# ✨ GoogleScanner: Intelligent Google Workspace & Cloud Photos Automation
 
-[![CI Test Suite](https://github.com/Guru-coder-09/NeatWorkspace/actions/workflows/ci.yml/badge.svg)](https://github.com/Guru-coder-09/NeatWorkspace/actions/workflows/ci.yml)
+[![CI Test Suite](https://github.com/Guru-coder-09/GoogleScanner/actions/workflows/ci.yml/badge.svg)](https://github.com/Guru-coder-09/GoogleScanner/actions/workflows/ci.yml)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
-[![Tests: 11 Passed](https://img.shields.io/badge/tests-11%20passed-brightgreen.svg)](https://github.com/Guru-coder-09/NeatWorkspace/actions)
+[![Tests: 11 Passed](https://img.shields.io/badge/tests-11%20passed-brightgreen.svg)](https://github.com/Guru-coder-09/GoogleScanner/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**NeatWorkspace** is a privacy-first, zero-data-loss automation workstation for **Google Drive, Google Docs, Sheets, Slides, and Google Photos**. It eliminates root drive chaos, isolates exact duplicate cloud files via native MD5 checksums, cleans up generic "Untitled" documents, clusters Google Photos into chronological albums, and provides a **100% reversible cloud rollback engine**.
+**GoogleScanner** is a privacy-first, zero-data-loss automation workstation for **Google Drive, Google Docs, Sheets, Slides, and Google Photos**. It eliminates root drive chaos, isolates exact duplicate cloud files via native MD5 checksums, cleans up generic "Untitled" documents, clusters Google Photos into chronological albums, and provides a **100% reversible cloud rollback engine**.
 
 ---
 
@@ -49,8 +49,8 @@ Google Drive Root/
 ### 1. Installation
 
 ```bash
-git clone https://github.com/Guru-coder-09/NeatWorkspace.git
-cd NeatWorkspace
+git clone https://github.com/Guru-coder-09/GoogleScanner.git
+cd GoogleScanner
 
 # Setup virtual environment
 python -m venv .venv
