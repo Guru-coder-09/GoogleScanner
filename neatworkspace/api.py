@@ -121,7 +121,13 @@ def scan_drive(folder_id: str = "root", recursive: bool = False):
             "category": p.target_category,
             "reason": p.reason,
             "is_duplicate": p.is_duplicate,
-            "master_name": p.master_name
+            "master_name": p.master_name,
+            "thumbnail_link": p.item.thumbnail_link,
+            "web_view_link": p.item.web_view_link,
+            "icon_link": p.item.icon_link,
+            "master_id": p.master_id,
+            "master_thumbnail": p.master_thumbnail,
+            "master_web_view": p.master_web_view,
         })
 
     return {

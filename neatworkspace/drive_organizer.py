@@ -18,6 +18,9 @@ class CloudPlanItem:
     reason: str
     is_duplicate: bool = False
     master_name: Optional[str] = None
+    master_id: Optional[str] = None
+    master_thumbnail: Optional[str] = None
+    master_web_view: Optional[str] = None
 
 
 class DriveOrganizer:
@@ -43,12 +46,16 @@ class DriveOrganizer:
 
             if item.id in dups:
                 dup_info = dups[item.id]
+                m = dup_info['master']
                 plan.append(CloudPlanItem(
                     item=item,
                     target_category="_Duplicates",
-                    reason=f"Exact duplicate copy of: {dup_info['master'].name}",
+                    reason=f"Exact duplicate copy of: {m.name}",
                     is_duplicate=True,
-                    master_name=dup_info['master'].name
+                    master_name=m.name,
+                    master_id=m.id,
+                    master_thumbnail=m.thumbnail_link,
+                    master_web_view=m.web_view_link
                 ))
             else:
                 cat, reason = classify_cloud_item(item.name, item.mime_type, item.size)

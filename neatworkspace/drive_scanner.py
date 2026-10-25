@@ -17,6 +17,9 @@ class DriveItem:
     md5_checksum: Optional[str] = None
     created_time: Optional[str] = None
     modified_time: Optional[str] = None
+    thumbnail_link: Optional[str] = None
+    web_view_link: Optional[str] = None
+    icon_link: Optional[str] = None
 
     @property
     def is_folder(self) -> bool:
@@ -47,7 +50,7 @@ class DriveScanner:
             query = f"'{folder_id}' in parents and trashed = false"
 
         page_token = None
-        fields = "nextPageToken, files(id, name, mimeType, parents, size, md5Checksum, createdTime, modifiedTime)"
+        fields = "nextPageToken, files(id, name, mimeType, parents, size, md5Checksum, createdTime, modifiedTime, thumbnailLink, webViewLink, iconLink)"
 
         while True:
             response = self.service.files().list(
@@ -72,7 +75,10 @@ class DriveScanner:
                     size=int(f["size"]) if "size" in f else None,
                     md5_checksum=f.get("md5Checksum"),
                     created_time=f.get("createdTime"),
-                    modified_time=f.get("modifiedTime")
+                    modified_time=f.get("modifiedTime"),
+                    thumbnail_link=f.get("thumbnailLink"),
+                    web_view_link=f.get("webViewLink"),
+                    icon_link=f.get("iconLink")
                 ))
 
             page_token = response.get("nextPageToken")

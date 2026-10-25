@@ -3,31 +3,71 @@ from pathlib import Path
 html_path = Path(r"C:\Users\tejag\neat-workspace\static\index.html")
 content = html_path.read_text(encoding="utf-8")
 
-old_appstate = """      const AppState = {
-        studioMode: 'drive', // 'drive' or 'photos'
-        simulationMode: true,
-        driveSubtab: 'subtab-declutter',
-        driveCategory: 'all',
-        driveSearch: '',"""
+# 1. Update Modal HTML
+old_modal = """        <div class="py-4 space-y-3.5 text-xs">
+          <div>
+            <span class="text-slate-400 block font-semibold mb-1">Target Cloud Destination</span>"""
 
-new_appstate = """      const AppState = {
-        studioMode: 'drive', // 'drive' or 'photos'
-        simulationMode: true,
-        scanRecursive: false,
-        driveSubtab: 'subtab-declutter',
-        driveCategory: 'all',
-        driveSearch: '',"""
+new_modal = """        <!-- Live Visual Preview Container -->
+        <div id="modalPreviewBox" class="mt-4 rounded-xl overflow-hidden bg-black/60 border border-white/10 flex items-center justify-center min-h-[140px] max-h-[260px] relative shadow-inner">
+          <img id="modalPreviewImg" src="" alt="File Preview" class="w-full h-full max-h-[260px] object-contain transition-transform" />
+          <div id="modalPreviewPlaceholder" class="hidden flex-col items-center justify-center p-6 text-slate-500 text-xs">
+            <i data-lucide="file-text" class="w-10 h-10 mb-1 opacity-40"></i>
+            <span>No visual preview thumbnail available for this file format</span>
+          </div>
+        </div>
 
-if old_appstate in content:
-    content = content.replace(old_appstate, new_appstate)
-    print("Updated AppState")
+        <div class="py-4 space-y-3 text-xs">
+          <div>
+            <span class="text-slate-400 block font-semibold mb-1">Target Cloud Destination</span>"""
 
+if old_modal in content:
+    content = content.replace(old_modal, new_modal)
+    print("Updated Modal Preview Box")
+
+old_modal_footer = """        <div class="pt-4 border-t border-white/10 flex items-center justify-end gap-2">
+          <button onclick="closeInspectModal()" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer">
+            Close
+          </button>
+          <button
+            onclick="organizeSingleModalFile()"
+            class="px-4 py-2 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white transition-colors flex items-center gap-1.5 cursor-pointer"
+          >
+            <i data-lucide="folder-check" class="w-3.5 h-3.5"></i>
+            <span>Route Now</span>
+          </button>
+        </div>"""
+
+new_modal_footer = """        <div class="pt-4 border-t border-white/10 flex items-center justify-between gap-2">
+          <a id="modalDriveLink" href="#" target="_blank" rel="noopener noreferrer" class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-white/10 hover:bg-white/20 text-slate-200 border border-white/20 transition-all flex items-center gap-1.5 cursor-pointer">
+            <i data-lucide="external-link" class="w-3.5 h-3.5 text-blue-400"></i>
+            <span>Open in Google Drive ↗</span>
+          </a>
+          <div class="flex items-center gap-2">
+            <button onclick="closeInspectModal()" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer">
+              Close
+            </button>
+            <button
+              onclick="organizeSingleModalFile()"
+              class="px-4 py-2 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white transition-colors flex items-center gap-1.5 cursor-pointer"
+            >
+              <i data-lucide="folder-check" class="w-3.5 h-3.5"></i>
+              <span>Route Now</span>
+            </button>
+          </div>
+        </div>"""
+
+if old_modal_footer in content:
+    content = content.replace(old_modal_footer, new_modal_footer)
+    print("Updated Modal Footer with Drive Link")
+
+# 2. Update JavaScript Section starting from function getFilteredDriveFiles
 start_marker = "      function getFilteredDriveFiles() {"
 
 if start_marker in content:
     pre = content[:content.find(start_marker)]
     
-    new_code = """      function getFilteredDriveFiles() {
+    new_js = """      function getFilteredDriveFiles() {
         return AppState.driveFiles.filter(f => {
           const matchesCat =
             AppState.driveCategory === 'all' ||
@@ -93,12 +133,12 @@ if start_marker in content:
 
         const qBtn = document.getElementById('quarantineAllDriveBtn');
         if (qBtn) {
-          qBtn.innerHTML = `<i data-lucide="shield-alert" class="w-4 h-4"></i><span>🧹 Quarantine All ${dupCount} Duplicates to _Duplicates/</span>`;
+          qBtn.innerHTML = `<i data-lucide=\"shield-alert\" class=\"w-4 h-4\"></i><span>🧹 Quarantine All ${dupCount} Duplicates to _Duplicates/</span>`;
         }
       }
 
       /**
-       * DRIVE STUDIO: Render Table
+       * DRIVE STUDIO: Render Table with Live Visual Thumbnails
        */
       function renderDriveTable() {
         const tbody = document.getElementById('driveTableBody');
@@ -135,64 +175,79 @@ if start_marker in content:
 
           let statusHtml = '';
           if (file.status === 'routed') {
-            statusHtml = `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-              <i data-lucide="check" class="w-3 h-3"></i> Routed
+            statusHtml = `<span class=\"inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30\">
+              <i data-lucide=\"check\" class=\"w-3 h-3\"></i> Routed
             </span>`;
           } else if (file.status === 'duplicate') {
-            statusHtml = `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-500/20 text-amber-300 border border-amber-500/30">
-              <i data-lucide="copy" class="w-3 h-3 text-amber-400"></i> Duplicate
+            statusHtml = `<span class=\"inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-500/20 text-amber-300 border border-amber-500/30\">
+              <i data-lucide=\"copy\" class=\"w-3 h-3 text-amber-400\"></i> Duplicate
             </span>`;
           } else {
-            statusHtml = `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-white/5 text-slate-300 border border-white/10">
-              <i data-lucide="compass" class="w-3 h-3 text-blue-400"></i> Pending
+            statusHtml = `<span class=\"inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-white/5 text-slate-300 border border-white/10\">
+              <i data-lucide=\"compass\" class=\"w-3 h-3 text-blue-400\"></i> Pending
             </span>`;
           }
 
+          // Thumbnail Preview Element
+          const thumbHtml = file.thumbnail_link ? `
+            <div class=\"w-10 h-10 rounded-lg overflow-hidden bg-slate-900 border border-white/15 shrink-0 relative group/thumb cursor-pointer shadow-sm\" onclick=\"openInspectModal('${file.id}')\" title=\"Click to preview\">
+              <img src=\"${file.thumbnail_link}\" alt=\"preview\" class=\"w-full h-full object-cover group-hover/thumb:scale-110 transition-transform duration-200\" onerror=\"this.parentElement.innerHTML='<div class=\\'w-full h-full flex items-center justify-center ${iconClass}\\'> <i data-lucide=\\'${iconName}\\' class=\\'w-4 h-4\\'></i></div>'\" />
+              <div class=\"absolute inset-0 bg-black/40 opacity-0 group-hover/thumb:opacity-100 flex items-center justify-center transition-opacity text-white text-[9px] font-bold\">
+                <i data-lucide=\"eye\" class=\"w-3.5 h-3.5\"></i>
+              </div>
+            </div>
+          ` : `
+            <div class=\"w-10 h-10 rounded-lg ${iconClass} border flex items-center justify-center shrink-0 cursor-pointer\" onclick=\"openInspectModal('${file.id}')\">
+              <i data-lucide=\"${iconName}\" class=\"w-4 h-4\"></i>
+            </div>
+          `;
+
           return `
-            <tr class="hover:bg-white/5 transition-colors group cursor-pointer ${isChecked ? 'bg-blue-500/5' : ''}">
-              <td class="py-3.5 pl-4 pr-2">
+            <tr class=\"hover:bg-white/5 transition-colors group cursor-pointer ${isChecked ? 'bg-blue-500/5' : ''}\">
+              <td class=\"py-3.5 pl-4 pr-2\">
                 <input
-                  type="checkbox"
-                  class="drive-file-cb w-4 h-4 rounded border-slate-600 bg-slate-800 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                  type=\"checkbox\"
+                  class=\"drive-file-cb w-4 h-4 rounded border-slate-600 bg-slate-800 text-blue-600 focus:ring-blue-500 cursor-pointer\"
                   ${isChecked ? 'checked' : ''}
-                  onchange="toggleDriveFileSelection('${file.id}', this.checked)"
+                  onchange=\"toggleDriveFileSelection('${file.id}', this.checked)\"
                 />
               </td>
-              <td class="py-3.5 px-3">
-                <div class="flex items-center gap-3">
-                  <div class="w-8 h-8 rounded-lg ${iconClass} border flex items-center justify-center shrink-0">
-                    <i data-lucide="${iconName}" class="w-4 h-4"></i>
-                  </div>
-                  <div class="max-w-[220px] sm:max-w-xs md:max-w-sm">
-                    <p class="font-semibold text-slate-100 group-hover:text-blue-300 transition-colors truncate" title="${file.name}">
-                      ${file.name}
-                    </p>
-                    <p class="text-[11px] text-slate-400">${file.modified}</p>
+              <td class=\"py-3.5 px-3\">
+                <div class=\"flex items-center gap-3\">
+                  ${thumbHtml}
+                  <div class=\"max-w-[220px] sm:max-w-xs md:max-w-sm\">
+                    <div class=\"flex items-center gap-1.5\">
+                      <p class=\"font-semibold text-slate-100 group-hover:text-blue-300 transition-colors truncate\" title=\"${file.name}\">
+                        ${file.name}
+                      </p>
+                      ${file.web_view_link ? `<a href=\"${file.web_view_link}\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"text-slate-500 hover:text-blue-400 shrink-0 p-0.5\" title=\"Open in Google Drive ↗\"><i data-lucide=\"external-link\" class=\"w-3 h-3\"></i></a>` : ''}
+                    </div>
+                    <p class=\"text-[11px] text-slate-400 font-mono\">${file.modified}</p>
                   </div>
                 </div>
               </td>
-              <td class="py-3.5 px-3 text-xs text-slate-300 font-mono hidden sm:table-cell">
+              <td class=\"py-3.5 px-3 text-xs text-slate-300 font-mono hidden sm:table-cell\">
                 ${file.size}
               </td>
-              <td class="py-3.5 px-3">
-                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-white/10 text-white border border-white/15">
-                  <i data-lucide="folder" class="w-3 h-3 text-blue-400"></i>
+              <td class=\"py-3.5 px-3\">
+                <span class=\"inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-white/10 text-white border border-white/15\">
+                  <i data-lucide=\"folder\" class=\"w-3 h-3 text-blue-400\"></i>
                   ${file.targetFolder}
                 </span>
               </td>
-              <td class="py-3.5 px-3 text-xs text-slate-400 max-w-xs hidden md:table-cell">
-                <span class="line-clamp-1 italic">${file.geminiReason}</span>
+              <td class=\"py-3.5 px-3 text-xs text-slate-400 max-w-xs hidden md:table-cell\">
+                <span class=\"line-clamp-1 italic\">${file.geminiReason}</span>
               </td>
-              <td class="py-3.5 px-3">
+              <td class=\"py-3.5 px-3\">
                 ${statusHtml}
               </td>
-              <td class="py-3.5 pr-4 pl-2 text-right">
+              <td class=\"py-3.5 pr-4 pl-2 text-right\">
                 <button
-                  onclick="openInspectModal('${file.id}')"
-                  class="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
-                  title="Inspect AI Classification"
+                  onclick=\"openInspectModal('${file.id}')\"
+                  class=\"p-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer border border-transparent hover:border-white/15\"
+                  title=\"Visual Preview & Details\"
                 >
-                  <i data-lucide="info" class="w-4 h-4"></i>
+                  <i data-lucide=\"eye\" class=\"w-4 h-4 text-blue-400\"></i>
                 </button>
               </td>
             </tr>
@@ -311,7 +366,7 @@ if start_marker in content:
       }
 
       /**
-       * DRIVE STUDIO: Render MD5 Duplicates
+       * DRIVE STUDIO: Render MD5 Duplicates with Side-by-Side Visual Previews
        */
       function renderDriveDuplicatePairs() {
         const container = document.getElementById('driveDuplicatePairsContainer');
@@ -319,10 +374,10 @@ if start_marker in content:
 
         if (AppState.driveDuplicates.length === 0) {
           container.innerHTML = `
-            <div class="p-8 rounded-2xl glass-card-dark text-center border border-white/10">
-              <i data-lucide="check-circle" class="w-8 h-8 text-emerald-400 mx-auto mb-2"></i>
-              <h4 class="text-sm font-bold text-white">No Byte-Exact Duplicates Found</h4>
-              <p class="text-xs text-slate-400 mt-1">Your Google Drive is clean with zero redundant MD5 checksum copies.</p>
+            <div class=\"p-8 rounded-2xl glass-card-dark text-center border border-white/10\">
+              <i data-lucide=\"check-circle\" class=\"w-8 h-8 text-emerald-400 mx-auto mb-2\"></i>
+              <h4 class=\"text-sm font-bold text-white\">No Byte-Exact Duplicates Found</h4>
+              <p class=\"text-xs text-slate-400 mt-1\">Your Google Drive is clean with zero redundant MD5 checksum copies.</p>
             </div>
           `;
           lucide.createIcons();
@@ -331,46 +386,74 @@ if start_marker in content:
 
         const dHtml = AppState.driveDuplicates.map((dup, idx) => {
           return `
-            <div class="p-4 rounded-2xl glass-card-dark border ${dup.quarantined ? 'border-emerald-500/30 bg-emerald-950/20' : 'border-white/10'} transition-all">
-              <div class="flex items-center justify-between pb-2 mb-3 border-b border-white/5">
-                <div class="flex items-center gap-2">
-                  <span class="text-xs font-bold text-amber-400 font-mono">PAIR #${idx + 1}</span>
-                  <span class="text-xs text-slate-400">· MD5 Byte-Exact Match</span>
+            <div class=\"p-4 rounded-2xl glass-card-dark border ${dup.quarantined ? 'border-emerald-500/30 bg-emerald-950/20' : 'border-white/10'} transition-all\">
+              <div class=\"flex items-center justify-between pb-2 mb-3 border-b border-white/5\">
+                <div class=\"flex items-center gap-2\">
+                  <span class=\"text-xs font-bold text-amber-400 font-mono\">PAIR #${idx + 1}</span>
+                  <span class=\"text-xs text-slate-400\">· MD5 Byte-Exact Match</span>
                 </div>
                 ${dup.quarantined
-                  ? `<span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
-                      <i data-lucide="check" class="w-3 h-3"></i> Quarantined
+                  ? `<span class=\"px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1\">
+                      <i data-lucide=\"check\" class=\"w-3 h-3\"></i> Quarantined
                     </span>`
                   : `<button
-                      onclick="quarantineSingleDrivePair('${dup.id}')"
-                      class="px-3 py-1 rounded-xl text-xs font-bold bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 transition-colors flex items-center gap-1 cursor-pointer"
+                      onclick=\"quarantineSingleDrivePair('${dup.id}')\"
+                      class=\"px-3 py-1 rounded-xl text-xs font-bold bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 transition-colors flex items-center gap-1 cursor-pointer\"
                     >
-                      <i data-lucide="shield-alert" class="w-3 h-3"></i> Quarantine Copy
+                      <i data-lucide=\"shield-alert\" class=\"w-3 h-3\"></i> Quarantine Copy
                     </button>`
                 }
               </div>
 
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div class="p-3.5 rounded-xl bg-emerald-950/30 border border-emerald-500/30 backdrop-blur-md">
-                  <div class="flex items-center justify-between mb-2">
-                    <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1">
-                      <i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Master File (Keep)
-                    </span>
-                    <span class="text-[10px] font-mono text-emerald-300/80 bg-emerald-500/10 px-2 py-0.5 rounded">ORIGINAL</span>
+              <div class=\"grid grid-cols-1 md:grid-cols-2 gap-3\">
+                <!-- Master File Card with Preview -->
+                <div class=\"p-3.5 rounded-xl bg-emerald-950/30 border border-emerald-500/30 backdrop-blur-md flex flex-col justify-between\">
+                  <div>
+                    <div class=\"flex items-center justify-between mb-2\">
+                      <span class=\"text-[11px] font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1\">
+                        <i data-lucide=\"check-circle\" class=\"w-3.5 h-3.5\"></i> Master File (Keep)
+                      </span>
+                      <span class=\"text-[10px] font-mono text-emerald-300/80 bg-emerald-500/10 px-2 py-0.5 rounded\">ORIGINAL</span>
+                    </div>
+
+                    ${dup.master_thumbnail ? `
+                      <div class=\"w-full h-32 rounded-lg overflow-hidden bg-black/50 border border-white/10 mb-2.5 flex items-center justify-center relative group\">
+                        <img src=\"${dup.master_thumbnail}\" alt=\"Master Thumbnail\" class=\"w-full h-full object-contain group-hover:scale-105 transition-transform\" />
+                        ${dup.master_web_view ? `<a href=\"${dup.master_web_view}\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-xs font-bold transition-opacity\">Open Original ↗</a>` : ''}
+                      </div>
+                    ` : ''}
+
+                    <h4 class=\"text-sm font-bold text-white truncate\" title=\"${dup.master}\">${dup.master}</h4>
                   </div>
-                  <h4 class="text-sm font-bold text-white truncate" title="${dup.master}">${dup.master}</h4>
-                  <p class="text-xs text-slate-300 font-mono mt-1">${dup.size}</p>
+                  <div class=\"flex items-center justify-between mt-2 pt-2 border-t border-emerald-500/20\">
+                    <p class=\"text-xs text-slate-300 font-mono\">${dup.size}</p>
+                    ${dup.master_web_view ? `<a href=\"${dup.master_web_view}\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"text-[11px] text-emerald-400 hover:text-emerald-300 font-semibold flex items-center gap-1\">Preview in Drive ↗</a>` : ''}
+                  </div>
                 </div>
 
-                <div class="p-3.5 rounded-xl bg-amber-950/25 border border-amber-500/30 backdrop-blur-md">
-                  <div class="flex items-center justify-between mb-2">
-                    <span class="text-[11px] font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1">
-                      <i data-lucide="alert-triangle" class="w-3.5 h-3.5"></i> Duplicate Copy (Quarantine)
-                    </span>
-                    <span class="text-[10px] font-mono text-amber-300/80 bg-amber-500/10 px-2 py-0.5 rounded">${dup.hash || 'MD5 MATCH'}</span>
+                <!-- Duplicate Copy Card with Preview -->
+                <div class=\"p-3.5 rounded-xl bg-amber-950/25 border border-amber-500/30 backdrop-blur-md flex flex-col justify-between\">
+                  <div>
+                    <div class=\"flex items-center justify-between mb-2\">
+                      <span class=\"text-[11px] font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1\">
+                        <i data-lucide=\"alert-triangle\" class=\"w-3.5 h-3.5\"></i> Duplicate Copy (Quarantine)
+                      </span>
+                      <span class=\"text-[10px] font-mono text-amber-300/80 bg-amber-500/10 px-2 py-0.5 rounded\">${dup.hash || 'MD5 MATCH'}</span>
+                    </div>
+
+                    ${dup.copy_thumbnail ? `
+                      <div class=\"w-full h-32 rounded-lg overflow-hidden bg-black/50 border border-white/10 mb-2.5 flex items-center justify-center relative group\">
+                        <img src=\"${dup.copy_thumbnail}\" alt=\"Copy Thumbnail\" class=\"w-full h-full object-contain group-hover:scale-105 transition-transform\" />
+                        ${dup.copy_web_view ? `<a href=\"${dup.copy_web_view}\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-xs font-bold transition-opacity\">Open Copy ↗</a>` : ''}
+                      </div>
+                    ` : ''}
+
+                    <h4 class=\"text-sm font-bold text-amber-200 truncate\" title=\"${dup.copy}\">${dup.copy}</h4>
                   </div>
-                  <h4 class="text-sm font-bold text-amber-200 truncate" title="${dup.copy}">${dup.copy}</h4>
-                  <p class="text-xs text-slate-300 font-mono mt-1">${dup.size} · Target: _Duplicates/</p>
+                  <div class=\"flex items-center justify-between mt-2 pt-2 border-t border-amber-500/20\">
+                    <p class=\"text-xs text-slate-300 font-mono\">${dup.size} · Target: _Duplicates/</p>
+                    ${dup.copy_web_view ? `<a href=\"${dup.copy_web_view}\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"text-[11px] text-amber-400 hover:text-amber-300 font-semibold flex items-center gap-1\">Preview in Drive ↗</a>` : ''}
+                  </div>
                 </div>
               </div>
             </div>
@@ -424,7 +507,7 @@ if start_marker in content:
         if (!pair || !pair.fileId) return;
 
         const isSim = AppState.simulationMode;
-        showToast(isSim ? `🔍 Simulating quarantine for "${pair.copy}"...` : `🧹 Quarantining "${pair.copy}"...`, 'info');
+        showToast(isSim ? `🔍 Simulating quarantine for \"${pair.copy}\"...` : `🧹 Quarantining \"${pair.copy}\"...`, 'info');
 
         try {
           const res = await fetch('/api/drive/organize', {
@@ -439,11 +522,11 @@ if start_marker in content:
           if (data.dry_run) {
             pair.quarantined = true;
             renderDriveDuplicatePairs();
-            showToast(`🛡️ Simulation: "${pair.copy}" mapped to _Duplicates/ folder.`, 'info');
+            showToast(`🛡️ Simulation: \"${pair.copy}\" mapped to _Duplicates/ folder.`, 'info');
           } else {
             playChimeSound();
             triggerConfetti('sparkle');
-            showToast(`⚠️ Quarantined "${pair.copy}" into _Duplicates/!`, 'success');
+            showToast(`⚠️ Quarantined \"${pair.copy}\" into _Duplicates/!`, 'success');
             await syncLiveDriveData();
             await loadHistory();
           }
@@ -461,10 +544,10 @@ if start_marker in content:
 
         if (AppState.auditLogs.length === 0) {
           container.innerHTML = `
-            <div class="p-8 rounded-2xl glass-card-dark text-center border border-white/10">
-              <i data-lucide="history" class="w-8 h-8 text-blue-400 mx-auto mb-2"></i>
-              <h4 class="text-sm font-bold text-white">No Cloud Operations Yet</h4>
-              <p class="text-xs text-slate-400 mt-1">Actions performed in GoogleScanner are automatically tracked here for 100% reversible undo.</p>
+            <div class=\"p-8 rounded-2xl glass-card-dark text-center border border-white/10\">
+              <i data-lucide=\"history\" class=\"w-8 h-8 text-blue-400 mx-auto mb-2\"></i>
+              <h4 class=\"text-sm font-bold text-white\">No Cloud Operations Yet</h4>
+              <p class=\"text-xs text-slate-400 mt-1\">Actions performed in GoogleScanner are automatically tracked here for 100% reversible undo.</p>
             </div>
           `;
           lucide.createIcons();
@@ -473,29 +556,29 @@ if start_marker in content:
 
         const logsHtml = AppState.auditLogs.map(log => {
           return `
-            <div class="p-4 rounded-2xl glass-card-dark border border-white/10 flex items-center justify-between gap-4">
-              <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-purple-300 shrink-0">
-                  <i data-lucide="history" class="w-4 h-4"></i>
+            <div class=\"p-4 rounded-2xl glass-card-dark border border-white/10 flex items-center justify-between gap-4\">
+              <div class=\"flex items-center gap-3\">
+                <div class=\"w-9 h-9 rounded-xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-purple-300 shrink-0\">
+                  <i data-lucide=\"history\" class=\"w-4 h-4\"></i>
                 </div>
                 <div>
-                  <div class="flex items-center gap-2">
-                    <h4 class="text-sm font-bold text-white">${log.action}</h4>
-                    <span class="px-2 py-0.5 rounded-full text-[10px] font-mono ${log.status === 'Rolled back' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'}">${log.status}</span>
+                  <div class=\"flex items-center gap-2\">
+                    <h4 class=\"text-sm font-bold text-white\">${log.action}</h4>
+                    <span class=\"px-2 py-0.5 rounded-full text-[10px] font-mono ${log.status === 'Rolled back' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'}\">${log.status}</span>
                   </div>
-                  <p class="text-xs text-slate-300 mt-0.5">${log.target}</p>
-                  <p class="text-[11px] text-slate-400 font-mono mt-0.5">${log.timestamp}</p>
+                  <p class=\"text-xs text-slate-300 mt-0.5\">${log.target}</p>
+                  <p class=\"text-[11px] text-slate-400 font-mono mt-0.5\">${log.timestamp}</p>
                 </div>
               </div>
 
               ${log.canUndo
                 ? `<button
-                    onclick="rollbackSpecificTx('${log.id}')"
-                    class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 border border-blue-500/40 transition-colors flex items-center gap-1.5 cursor-pointer shrink-0"
+                    onclick=\"rollbackSpecificTx('${log.id}')\"
+                    class=\"px-3.5 py-1.5 rounded-xl text-xs font-bold bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 border border-blue-500/40 transition-colors flex items-center gap-1.5 cursor-pointer shrink-0\"
                   >
-                    <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Undo
+                    <i data-lucide=\"rotate-ccw\" class=\"w-3.5 h-3.5\"></i> Undo
                   </button>`
-                : `<span class="text-xs text-slate-400 font-mono">Snapshot</span>`
+                : `<span class=\"text-xs text-slate-400 font-mono\">Snapshot</span>`
               }
             </div>
           `;
@@ -577,7 +660,7 @@ if start_marker in content:
       }
 
       /**
-       * File Inspect Modal
+       * File Inspect Modal with Live Visual Thumbnail & Direct Link
        */
       function openInspectModal(fileId) {
         playPopSound();
@@ -592,6 +675,29 @@ if start_marker in content:
         document.getElementById('modalGeminiReason').textContent = file.geminiReason;
         document.getElementById('modalModifiedDate').textContent = file.modified;
         document.getElementById('modalStatusBadge').textContent = file.status === 'routed' ? 'Routed in Folder' : 'Unorganized in Root';
+
+        const previewImg = document.getElementById('modalPreviewImg');
+        const placeholder = document.getElementById('modalPreviewPlaceholder');
+        const driveLink = document.getElementById('modalDriveLink');
+
+        if (file.thumbnail_link) {
+          // Request high resolution preview
+          const highResThumb = file.thumbnail_link.replace(/=s\d+/, '=s800');
+          previewImg.src = highResThumb;
+          previewImg.classList.remove('hidden');
+          placeholder.classList.add('hidden');
+        } else {
+          previewImg.src = '';
+          previewImg.classList.add('hidden');
+          placeholder.classList.remove('hidden');
+        }
+
+        if (file.web_view_link) {
+          driveLink.href = file.web_view_link;
+          driveLink.classList.remove('hidden');
+        } else {
+          driveLink.classList.add('hidden');
+        }
 
         const modal = document.getElementById('inspectModal');
         const card = document.getElementById('inspectModalCard');
@@ -637,11 +743,11 @@ if start_marker in content:
           if (data.dry_run) {
             file.status = 'routed';
             renderDriveTable();
-            showToast(`🛡️ Simulation: "${file.name}" mapped to "${file.targetFolder}". Switch to Live Mode to execute.`, 'info');
+            showToast(`🛡️ Simulation: \"${file.name}\" mapped to \"${file.targetFolder}\". Switch to Live Mode to execute.`, 'info');
           } else {
             playChimeSound();
             triggerConfetti('burst');
-            showToast(`✨ Routed "${file.name}" to "${file.targetFolder}"`, 'success');
+            showToast(`✨ Routed \"${file.name}\" to \"${file.targetFolder}\"`, 'success');
             await syncLiveDriveData();
             await loadHistory();
           }
@@ -714,12 +820,12 @@ if start_marker in content:
 
         toast.className = `p-3.5 rounded-2xl bg-slate-900/90 dark:bg-slate-950/95 border ${borderColor} backdrop-blur-xl shadow-xl flex items-center justify-between gap-3 text-xs text-slate-100 transition-all duration-300 transform translate-y-4 opacity-0 pointer-events-auto`;
         toast.innerHTML = `
-          <div class="flex items-center gap-2.5">
-            <i data-lucide="${iconName}" class="w-4 h-4 shrink-0"></i>
-            <span class="font-medium">${message}</span>
+          <div class=\"flex items-center gap-2.5\">
+            <i data-lucide=\"${iconName}\" class=\"w-4 h-4 shrink-0\"></i>
+            <span class=\"font-medium\">${message}</span>
           </div>
-          <button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-white p-0.5 cursor-pointer">
-            <i data-lucide="x" class="w-3.5 h-3.5"></i>
+          <button onclick=\"this.parentElement.remove()\" class=\"text-slate-400 hover:text-white p-0.5 cursor-pointer\">
+            <i data-lucide=\"x\" class=\"w-3.5 h-3.5\"></i>
           </button>
         `;
 
@@ -803,7 +909,7 @@ if start_marker in content:
       }
 
       /**
-       * Initialization
+       * Initialization with Live Thumbnails & Web View Links
        */
       async function syncLiveDriveData() {
         try {
@@ -841,6 +947,9 @@ if start_marker in content:
                 geminiReason: f.reason || 'Categorized by file taxonomy rules.',
                 status: f.is_duplicate ? 'duplicate' : 'unorganized',
                 modified: 'Google Drive',
+                thumbnail_link: f.thumbnail_link || null,
+                web_view_link: f.web_view_link || null,
+                icon_link: f.icon_link || null,
                 selected: false
               };
             });
@@ -853,7 +962,12 @@ if start_marker in content:
                   id: `dup-${i}`,
                   fileId: d.id,
                   master: d.master_name || 'Original Master',
+                  master_id: d.master_id || null,
+                  master_thumbnail: d.master_thumbnail || null,
+                  master_web_view: d.master_web_view || null,
                   copy: d.name,
+                  copy_thumbnail: d.thumbnail_link || null,
+                  copy_web_view: d.web_view_link || null,
                   size: sizeFormatted,
                   hash: 'MD5 MATCH',
                   quarantined: false
@@ -891,8 +1005,8 @@ if start_marker in content:
   </body>
 </html>"""
 
-    full_updated = pre + new_code
+    full_updated = pre + new_js
     html_path.write_text(full_updated, encoding="utf-8")
-    print("Successfully updated static/index.html with all dynamic functions!")
+    print("Successfully updated static/index.html with visual thumbnails and previews!")
 else:
     print("Start marker not found")
