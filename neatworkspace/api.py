@@ -35,6 +35,60 @@ class UndoRequest(BaseModel):
     session_id: Optional[str] = None
 
 
+def _format_bytes(b: int) -> str:
+    if b >= 1024 ** 4:
+        return f"{b / (1024 ** 4):.2f} TB"
+    elif b >= 1024 ** 3:
+        return f"{b / (1024 ** 3):.2f} GB"
+    elif b >= 1024 ** 2:
+        return f"{b / (1024 ** 2):.1f} MB"
+    elif b >= 1024:
+        return f"{b / 1024:.0f} KB"
+    return f"{b} B"
+
+
+@app.get("/api/account/storage")
+def get_account_storage():
+    """Returns real storage quota and user profile from Google Drive API."""
+    service = auth.get_drive_service()
+    about = service.about().get(fields="storageQuota,user").execute()
+    user = about.get("user", {})
+    quota = about.get("storageQuota", {})
+
+    limit = int(quota.get("limit", 0))
+    usage = int(quota.get("usage", 0))
+    usage_drive = int(quota.get("usageInDrive", 0))
+    usage_trash = int(quota.get("usageInDriveTrash", 0))
+    usage_other = max(0, usage - usage_drive)
+
+    free_bytes = max(0, limit - usage) if limit > 0 else 0
+
+    return {
+        "user": {
+            "name": user.get("displayName", "User"),
+            "email": user.get("emailAddress", ""),
+            "avatar": user.get("photoLink", ""),
+        },
+        "quota": {
+            "limit_bytes": limit,
+            "usage_bytes": usage,
+            "drive_bytes": usage_drive,
+            "other_bytes": usage_other,
+            "trash_bytes": usage_trash,
+            "free_bytes": free_bytes,
+            "limit_formatted": _format_bytes(limit),
+            "usage_formatted": _format_bytes(usage),
+            "drive_formatted": _format_bytes(usage_drive),
+            "other_formatted": _format_bytes(usage_other),
+            "free_formatted": _format_bytes(free_bytes),
+            "drive_percent": round((usage_drive / limit * 100), 2) if limit > 0 else 0,
+            "other_percent": round((usage_other / limit * 100), 2) if limit > 0 else 0,
+            "free_percent": round((free_bytes / limit * 100), 2) if limit > 0 else 0,
+            "total_used_percent": round((usage / limit * 100), 2) if limit > 0 else 0,
+        }
+    }
+
+
 @app.get("/api/status")
 def get_status():
     """Returns connection and account authorization status."""
@@ -47,11 +101,11 @@ def get_status():
 
 
 @app.get("/api/drive/scan")
-def scan_drive(folder_id: str = "root"):
+def scan_drive(folder_id: str = "root", recursive: bool = False):
     """Scans Google Drive and returns categorized files and duplicates."""
     service = auth.get_drive_service()
     scanner = DriveScanner(service)
-    items = scanner.fetch_items(folder_id=folder_id)
+    items = scanner.fetch_items(folder_id=folder_id, recursive=recursive)
 
     dup_map = scanner.identify_duplicates(items)
     organizer = DriveOrganizer(service)

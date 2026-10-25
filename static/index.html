@@ -286,12 +286,10 @@
           </button>
 
           <!-- User Pill -->
-          <div class="hidden xl:flex items-center gap-2 pl-2.5 pr-3 py-1 rounded-full bg-white/10 border border-white/10 text-xs text-slate-200">
-            <span class="relative flex h-2 w-2">
-              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-            </span>
-            <span class="font-mono text-slate-300">tejaguru027@gmail.com</span>
+          <div class="hidden sm:flex items-center gap-2 pl-2 pr-3 py-1 rounded-full bg-white/10 border border-white/10 text-xs text-slate-200">
+            <img id="userAvatarImg" src="https://lh3.googleusercontent.com/a/default-user=s64" class="w-5 h-5 rounded-full object-cover border border-white/20" alt="Avatar" />
+            <span id="userNameLabel" class="font-bold text-white text-xs">Guru Teja</span>
+            <span id="userEmailLabel" class="font-mono text-slate-400 text-[11px] hidden md:inline">(tejaguru027@gmail.com)</span>
           </div>
 
         </div>
@@ -317,12 +315,12 @@
               <div class="flex items-center gap-2">
                 <h2 class="text-sm sm:text-base font-bold text-white flex items-center gap-1.5">
                   Google One Cloud Quota
-                  <span class="text-xs font-mono font-medium text-slate-400">(15.0 GB Account Total)</span>
+                  <span id="quotaTotalLabel" class="text-xs font-mono font-medium text-slate-300">(5.00 TB Account Plan)</span>
                 </h2>
-                <span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">95% Full</span>
+                <span id="quotaUsedBadge" class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">4.3% Used</span>
               </div>
-              <p class="text-xs text-slate-400">
-                14.3 GB used · <strong class="text-emerald-400">0.7 GB Free</strong> · <span class="text-pink-300">Photos (~8.4 GB)</span> & <span class="text-blue-300">Drive (~4.1 GB)</span> consume majority.
+              <p id="quotaSummaryDesc" class="text-xs text-slate-400">
+                <span id="quotaUsedFormatted">219.6 GB used</span> · <strong id="quotaFreeFormatted" class="text-emerald-400">4.79 TB Free</strong> · <span class="text-pink-300">Photos & Cloud Media (<span id="quotaOtherFormatted">214.0 GB</span>)</span> & <span class="text-blue-300">Google Drive (<span id="quotaDriveFormatted">5.6 GB</span>)</span>.
               </p>
             </div>
           </div>
@@ -337,34 +335,29 @@
 
         <!-- Visual Multi-segment Color Bar -->
         <div class="w-full h-4 rounded-full bg-slate-800/80 p-0.5 border border-white/10 overflow-hidden flex items-center shadow-inner">
-          <!-- Segment 1: Photos (8.4 GB - 56% - Coral Pink) -->
+          <!-- Segment 1: Photos & Media (Coral Pink) -->
           <div
+            id="barSegmentPhotos"
             class="h-full bg-gradient-to-r from-pink-500 to-rose-500 rounded-l-full relative group cursor-pointer transition-all hover:brightness-110"
-            style="width: 56%;"
+            style="width: 4.2%; min-width: 12px;"
             onclick="setStudioMode('photos')"
-            title="Google Photos: 8.4 GB (56%)"
+            title="Google Photos & Media: 214.0 GB"
           ></div>
           
-          <!-- Segment 2: Drive (4.1 GB - 27% - Google Blue) -->
+          <!-- Segment 2: Drive (Google Blue) -->
           <div
+            id="barSegmentDrive"
             class="h-full bg-gradient-to-r from-blue-500 to-indigo-500 relative group cursor-pointer transition-all hover:brightness-110"
-            style="width: 27%;"
+            style="width: 0.15%; min-width: 8px;"
             onclick="setStudioMode('drive')"
-            title="Google Drive: 4.1 GB (27%)"
+            title="Google Drive: 5.6 GB"
           ></div>
 
-          <!-- Segment 3: Gmail (1.8 GB - 12% - Google Red) -->
+          <!-- Segment 3: Free Space (Emerald) -->
           <div
-            class="h-full bg-gradient-to-r from-red-500 to-orange-500 relative group cursor-pointer transition-all hover:brightness-110"
-            style="width: 12%;"
-            title="Gmail: 1.8 GB (12%)"
-          ></div>
-
-          <!-- Segment 4: Free Space (0.7 GB - 5% - Emerald) -->
-          <div
-            class="h-full bg-emerald-400 rounded-r-full relative group cursor-pointer transition-all hover:brightness-110"
-            style="width: 5%;"
-            title="Free Space: 0.7 GB (5%)"
+            id="barSegmentFree"
+            class="h-full bg-emerald-400 rounded-r-full relative group cursor-pointer transition-all hover:brightness-110 flex-1"
+            title="Free Space: 4.79 TB"
           ></div>
         </div>
 
@@ -375,32 +368,28 @@
           <div class="flex items-center flex-wrap gap-4 text-slate-300">
             <button onclick="setStudioMode('photos')" class="flex items-center gap-1.5 hover:text-white transition-colors">
               <span class="w-2.5 h-2.5 rounded-full bg-pink-500"></span>
-              <span><strong>Google Photos</strong>: 8.4 GB (56%)</span>
+              <span><strong>Google Photos & Media</strong>: <span id="legendPhotosVal">214.0 GB</span></span>
             </button>
             <button onclick="setStudioMode('drive')" class="flex items-center gap-1.5 hover:text-white transition-colors">
               <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
-              <span><strong>Google Drive</strong>: 4.1 GB (27%)</span>
+              <span><strong>Google Drive</strong>: <span id="legendDriveVal">5.6 GB</span></span>
             </button>
-            <span class="flex items-center gap-1.5 text-slate-400">
-              <span class="w-2.5 h-2.5 rounded-full bg-red-500"></span>
-              <span><strong>Gmail</strong>: 1.8 GB (12%)</span>
-            </span>
             <span class="flex items-center gap-1.5 text-emerald-400">
               <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
-              <span><strong>Free</strong>: 0.7 GB (5%)</span>
+              <span><strong>Free Space</strong>: <span id="legendFreeVal">4.79 TB</span></span>
             </span>
           </div>
 
           <!-- 4 Quick Stat Badges -->
           <div class="flex items-center flex-wrap gap-2">
             <span class="px-2.5 py-1 rounded-lg bg-blue-500/15 border border-blue-500/30 text-blue-300 font-mono text-[11px] font-semibold flex items-center gap-1">
-              <i data-lucide="file" class="w-3 h-3"></i> 143 Drive Files
+              <i data-lucide="file" class="w-3 h-3"></i> <span id="heroDriveFilesCount">143 Drive Files</span>
             </span>
             <span class="px-2.5 py-1 rounded-lg bg-pink-500/15 border border-pink-500/30 text-pink-300 font-mono text-[11px] font-semibold flex items-center gap-1">
               <i data-lucide="image" class="w-3 h-3"></i> 348 Photos Evaluated
             </span>
             <span class="px-2.5 py-1 rounded-lg bg-amber-500/15 border border-amber-500/30 text-amber-300 font-mono text-[11px] font-semibold flex items-center gap-1">
-              <i data-lucide="copy" class="w-3 h-3"></i> 9 File Duplicates
+              <i data-lucide="copy" class="w-3 h-3"></i> <span id="heroDuplicatesCount">9 File Duplicates</span>
             </span>
             <span class="px-2.5 py-1 rounded-lg bg-purple-500/15 border border-purple-500/30 text-purple-300 font-mono text-[11px] font-semibold flex items-center gap-1">
               <i data-lucide="zap" class="w-3 h-3"></i> 14 Burst Sequences
@@ -413,7 +402,7 @@
       <!-- ========================================================================= -->
       <!-- 📸 VIEW A: GOOGLE PHOTOS STUDIO (Full Feature Set)                        -->
       <!-- ========================================================================= -->
-      <div id="viewPhotosStudio" class="space-y-8">
+      <div id="viewPhotosStudio" class="hidden space-y-8">
         
         <!-- Photos Studio Banner Header -->
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-gradient-to-r from-pink-500/15 via-purple-500/15 to-blue-500/10 border border-pink-500/30 backdrop-blur-md">
@@ -553,8 +542,45 @@
       <!-- ========================================================================= -->
       <!-- 📁 VIEW B: GOOGLE DRIVE STUDIO (Full Feature Set)                          -->
       <!-- ========================================================================= -->
-      <div id="viewDriveStudio" class="hidden space-y-6">
+      <div id="viewDriveStudio" class="space-y-6">
         
+        <!-- Live Cloud Status & Mode Banner -->
+        <div id="driveModeBanner" class="p-4 rounded-2xl glass-card-dark border border-emerald-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg">
+          <div class="flex items-center gap-3">
+            <div id="driveModeBannerIcon" class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-300 flex items-center justify-center shrink-0">
+              <i data-lucide="shield-check" class="w-5 h-5 text-emerald-400"></i>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <span id="driveModeBannerTitle" class="text-sm font-bold text-white">Safe Simulation Mode (Dry-Run Preview)</span>
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-mono bg-blue-500/20 text-blue-300 border border-blue-500/30">tejaguru027@gmail.com</span>
+              </div>
+              <p id="driveModeBannerDesc" class="text-xs text-slate-300 mt-0.5">
+                Preview what will be organized without touching real cloud files. Click the button to switch to <strong>Live Cloud Moves</strong>.
+              </p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <!-- Scan Scope Toggle: Root vs Entire 5 TB Drive -->
+            <div class="flex items-center bg-black/40 border border-white/10 rounded-xl p-0.5 text-xs">
+              <button id="scopeRootBtn" onclick="setScanScope(false)" class="px-2.5 py-1 rounded-lg font-bold bg-blue-600 text-white transition-all cursor-pointer" title="Scan only unorganized root files">
+                Root (143)
+              </button>
+              <button id="scopeAllBtn" onclick="setScanScope(true)" class="px-2.5 py-1 rounded-lg font-semibold text-slate-400 hover:text-white transition-all cursor-pointer" title="Scan all files across entire 5 TB Google Drive">
+                Entire 5 TB Drive (597)
+              </button>
+            </div>
+            <button onclick="toggleSimulationMode()" id="bannerToggleBtn" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-white/10 hover:bg-white/15 text-slate-200 border border-white/20 transition-all flex items-center gap-1.5 cursor-pointer">
+              <i data-lucide="toggle-left" class="w-4 h-4 text-emerald-400"></i>
+              <span>Switch to Live Mode</span>
+            </button>
+            <button onclick="syncLiveDriveData()" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 border border-blue-500/30 transition-all flex items-center gap-1.5 cursor-pointer">
+              <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+              <span>Refresh</span>
+            </button>
+          </div>
+        </div>
+
         <!-- Drive Studio Navigation Tabs (Declutter, MD5 Duplicates, Rollback) -->
         <div class="flex items-center justify-between flex-wrap gap-4 border-b border-white/10 pb-3">
           <nav class="flex items-center gap-1.5 p-1 rounded-2xl bg-slate-900/80 border border-white/10 backdrop-blur-md overflow-x-auto max-w-full">
@@ -566,7 +592,7 @@
             >
               <i data-lucide="folder-open" class="w-4 h-4 text-blue-400"></i>
               <span>📁 Drive Declutter & Folder Router</span>
-              <span id="driveTabFilesBadge" class="px-1.5 py-0.5 rounded-full text-[10px] font-mono bg-blue-500/30 text-blue-200">14</span>
+              <span id="driveTabFilesBadge" class="px-1.5 py-0.5 rounded-full text-[10px] font-mono bg-blue-500/30 text-blue-200">143</span>
             </button>
 
             <button
@@ -576,7 +602,7 @@
             >
               <i data-lucide="copy" class="w-4 h-4 text-amber-400"></i>
               <span>⚠️ Drive Native MD5 Duplicate Quarantine</span>
-              <span class="px-1.5 py-0.5 rounded-full text-[10px] font-mono bg-amber-500/20 text-amber-300">9</span>
+              <span id="driveTabDuplicatesBadge" class="px-1.5 py-0.5 rounded-full text-[10px] font-mono bg-amber-500/20 text-amber-300">9</span>
             </button>
 
             <button
@@ -619,12 +645,12 @@
           <!-- Category Filter Chips -->
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-2xl glass-card-dark">
             <div class="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0" id="driveCategoryChips">
-              <button onclick="setDriveCategory('all')" class="cat-chip px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/20 text-white border border-white/30" data-cat="all">All Files (14)</button>
-              <button onclick="setDriveCategory('docs')" class="cat-chip px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-white/10 border border-transparent" data-cat="docs">Google Docs (3)</button>
-              <button onclick="setDriveCategory('sheets')" class="cat-chip px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-white/10 border border-transparent" data-cat="sheets">Sheets (2)</button>
-              <button onclick="setDriveCategory('slides')" class="cat-chip px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-white/10 border border-transparent" data-cat="slides">Slides (3)</button>
-              <button onclick="setDriveCategory('pdfs')" class="cat-chip px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-white/10 border border-transparent" data-cat="pdfs">PDFs (2)</button>
-              <button onclick="setDriveCategory('archives')" class="cat-chip px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-white/10 border border-transparent" data-cat="archives">Archives & Media (4)</button>
+              <button onclick="setDriveCategory('all')" class="cat-chip px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/20 text-white border border-white/30" data-cat="all">All Files (<span id="catCountAll">143</span>)</button>
+              <button onclick="setDriveCategory('docs')" class="cat-chip px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-white/10 border border-transparent" data-cat="docs">Google Docs (<span id="catCountDocs">0</span>)</button>
+              <button onclick="setDriveCategory('sheets')" class="cat-chip px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-white/10 border border-transparent" data-cat="sheets">Sheets (<span id="catCountSheets">0</span>)</button>
+              <button onclick="setDriveCategory('slides')" class="cat-chip px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-white/10 border border-transparent" data-cat="slides">Slides (<span id="catCountSlides">0</span>)</button>
+              <button onclick="setDriveCategory('pdfs')" class="cat-chip px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-white/10 border border-transparent" data-cat="pdfs">PDFs (<span id="catCountPdfs">0</span>)</button>
+              <button onclick="setDriveCategory('archives')" class="cat-chip px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-white/10 border border-transparent" data-cat="archives">Archives & Media (<span id="catCountArchives">0</span>)</button>
             </div>
 
             <div class="flex items-center gap-2 shrink-0">
@@ -691,7 +717,7 @@
               <div>
                 <div class="flex items-center gap-2">
                   <h3 class="text-lg font-bold text-white">Drive Native MD5 Duplicate Quarantine</h3>
-                  <span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30">9 Duplicate Copies</span>
+                  <span id="quarantineBadgeCount" class="px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30">9 Duplicate Copies</span>
                 </div>
                 <p class="text-xs text-slate-300 mt-0.5">
                   Byte-exact MD5 checksums matched. Quarantining safely moves redundant copies into <code class="px-1.5 py-0.5 rounded bg-black/40 text-amber-200 font-mono text-[11px]">_Duplicates/</code> while preserving original masters.
@@ -990,6 +1016,7 @@
       const AppState = {
         studioMode: 'drive', // 'drive' or 'photos'
         simulationMode: true,
+        scanRecursive: false,
         driveSubtab: 'subtab-declutter',
         driveCategory: 'all',
         driveSearch: '',
@@ -1316,19 +1343,46 @@
         const btn = document.getElementById('simulationToggleBtn');
         const label = document.getElementById('simulationModeLabel');
         const icon = document.getElementById('simulationShieldIcon');
+        const banner = document.getElementById('driveModeBanner');
+        const bannerIcon = document.getElementById('driveModeBannerIcon');
+        const bannerTitle = document.getElementById('driveModeBannerTitle');
+        const bannerDesc = document.getElementById('driveModeBannerDesc');
+        const bannerToggleBtn = document.getElementById('bannerToggleBtn');
 
         if (AppState.simulationMode) {
           btn.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-500/25 transition-all shadow-sm cursor-pointer';
           label.textContent = 'Simulation Mode';
           icon.setAttribute('data-lucide', 'shield-check');
           icon.className = 'w-3.5 h-3.5 text-emerald-400 animate-pulse';
+
+          if (banner) {
+            banner.className = 'p-4 rounded-2xl glass-card-dark border border-emerald-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg';
+            if (bannerIcon) {
+              bannerIcon.className = 'w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-300 flex items-center justify-center shrink-0';
+              bannerIcon.innerHTML = '<i data-lucide="shield-check" class="w-5 h-5 text-emerald-400"></i>';
+            }
+            if (bannerTitle) bannerTitle.textContent = 'Safe Simulation Mode (Dry-Run Preview)';
+            if (bannerDesc) bannerDesc.innerHTML = 'Preview what will be organized without touching real cloud files. Click the button to switch to <strong>Live Cloud Moves</strong>.';
+            if (bannerToggleBtn) bannerToggleBtn.innerHTML = '<i data-lucide="toggle-left" class="w-4 h-4 text-emerald-400"></i><span>Switch to Live Mode</span>';
+          }
           showToast('Simulation Shield: Safe dry-run mode active', 'info');
         } else {
-          btn.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/40 hover:bg-amber-500/30 transition-all shadow-sm cursor-pointer';
-          label.textContent = 'Live Execution';
-          icon.setAttribute('data-lucide', 'shield-alert');
-          icon.className = 'w-3.5 h-3.5 text-amber-400';
-          showToast('Live Mode: Real changes will be executed on confirmation', 'warning');
+          btn.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/40 hover:bg-amber-500/30 transition-all shadow-sm cursor-pointer shadow-amber-500/10';
+          label.textContent = 'Live Cloud Moves';
+          icon.setAttribute('data-lucide', 'zap');
+          icon.className = 'w-3.5 h-3.5 text-amber-400 animate-bounce';
+
+          if (banner) {
+            banner.className = 'p-4 rounded-2xl glass-card-dark border border-amber-500/40 bg-amber-950/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg';
+            if (bannerIcon) {
+              bannerIcon.className = 'w-10 h-10 rounded-xl bg-amber-500/20 text-amber-300 flex items-center justify-center shrink-0';
+              bannerIcon.innerHTML = '<i data-lucide="zap" class="w-5 h-5 text-amber-400"></i>';
+            }
+            if (bannerTitle) bannerTitle.textContent = '⚡ Live Google Drive Move Mode Active';
+            if (bannerDesc) bannerDesc.innerHTML = 'All organize and duplicate quarantine actions will now move files in your real Google Drive with 100% reversible undo journal.';
+            if (bannerToggleBtn) bannerToggleBtn.innerHTML = '<i data-lucide="toggle-right" class="w-4 h-4 text-amber-400"></i><span>Switch to Simulation</span>';
+          }
+          showToast('Live Mode: Real changes will be executed in Google Drive', 'warning');
         }
         lucide.createIcons();
       }
@@ -1668,7 +1722,7 @@
             (AppState.driveCategory === 'sheets' && f.type === 'sheets') ||
             (AppState.driveCategory === 'slides' && f.type === 'slides') ||
             (AppState.driveCategory === 'pdfs' && f.type === 'pdfs') ||
-            (AppState.driveCategory === 'archives' && (f.type === 'archives'));
+            (AppState.driveCategory === 'archives' && (f.type === 'archives' || f.type === 'media'));
 
           const matchesQuery =
             AppState.driveSearch === '' ||
@@ -1678,6 +1732,56 @@
 
           return matchesCat && matchesQuery;
         });
+      }
+
+      function setScanScope(recursive) {
+        AppState.scanRecursive = recursive;
+        playPopSound();
+        const rootBtn = document.getElementById('scopeRootBtn');
+        const allBtn = document.getElementById('scopeAllBtn');
+        if (recursive) {
+          if (allBtn) allBtn.className = 'px-2.5 py-1 rounded-lg font-bold bg-blue-600 text-white transition-all cursor-pointer';
+          if (rootBtn) rootBtn.className = 'px-2.5 py-1 rounded-lg font-semibold text-slate-400 hover:text-white transition-all cursor-pointer';
+          showToast('Switching scan scope to Entire 5 TB Drive...', 'info');
+        } else {
+          if (rootBtn) rootBtn.className = 'px-2.5 py-1 rounded-lg font-bold bg-blue-600 text-white transition-all cursor-pointer';
+          if (allBtn) allBtn.className = 'px-2.5 py-1 rounded-lg font-semibold text-slate-400 hover:text-white transition-all cursor-pointer';
+          showToast('Switching scan scope to Root Folder...', 'info');
+        }
+        syncLiveDriveData();
+      }
+
+      function updateCategoryCounts() {
+        const allCount = AppState.driveFiles.length;
+        const docsCount = AppState.driveFiles.filter(f => f.type === 'docs').length;
+        const sheetsCount = AppState.driveFiles.filter(f => f.type === 'sheets').length;
+        const slidesCount = AppState.driveFiles.filter(f => f.type === 'slides').length;
+        const pdfsCount = AppState.driveFiles.filter(f => f.type === 'pdfs').length;
+        const archivesCount = AppState.driveFiles.filter(f => f.type === 'archives' || f.type === 'media').length;
+        const dupCount = AppState.driveDuplicates.length;
+
+        const setVal = (id, val) => {
+          const el = document.getElementById(id);
+          if (el) el.textContent = val;
+        };
+
+        setVal('catCountAll', allCount);
+        setVal('catCountDocs', docsCount);
+        setVal('catCountSheets', sheetsCount);
+        setVal('catCountSlides', slidesCount);
+        setVal('catCountPdfs', pdfsCount);
+        setVal('catCountArchives', archivesCount);
+
+        setVal('driveTabFilesBadge', allCount);
+        setVal('driveTabDuplicatesBadge', dupCount);
+        setVal('quarantineBadgeCount', `${dupCount} Duplicate Copies`);
+        setVal('heroDriveFilesCount', `${allCount} Drive Files Evaluated`);
+        setVal('heroDuplicatesCount', `${dupCount} File Duplicates`);
+
+        const qBtn = document.getElementById('quarantineAllDriveBtn');
+        if (qBtn) {
+          qBtn.innerHTML = `<i data-lucide="shield-alert" class="w-4 h-4"></i><span>🧹 Quarantine All ${dupCount} Duplicates to _Duplicates/</span>`;
+        }
       }
 
       /**
@@ -1711,7 +1815,7 @@
           } else if (file.type === 'pdfs') {
             iconName = 'file-text';
             iconClass = 'text-rose-400 bg-rose-500/10 border-rose-500/20';
-          } else if (file.type === 'archives') {
+          } else if (file.type === 'archives' || file.type === 'media') {
             iconName = 'archive';
             iconClass = 'text-purple-400 bg-purple-500/10 border-purple-500/20';
           }
@@ -1720,6 +1824,10 @@
           if (file.status === 'routed') {
             statusHtml = `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
               <i data-lucide="check" class="w-3 h-3"></i> Routed
+            </span>`;
+          } else if (file.status === 'duplicate') {
+            statusHtml = `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-500/20 text-amber-300 border border-amber-500/30">
+              <i data-lucide="copy" class="w-3 h-3 text-amber-400"></i> Duplicate
             </span>`;
           } else {
             statusHtml = `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-white/5 text-slate-300 border border-white/10">
@@ -1750,22 +1858,22 @@
                   </div>
                 </div>
               </td>
-              <td class="py-3.5 px-3 text-slate-300 font-mono text-xs tabular-nums whitespace-nowrap">
+              <td class="py-3.5 px-3 text-xs text-slate-300 font-mono hidden sm:table-cell">
                 ${file.size}
               </td>
-              <td class="py-3.5 px-3 whitespace-nowrap">
-                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-medium bg-white/5 border border-white/10 text-blue-200">
+              <td class="py-3.5 px-3">
+                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-white/10 text-white border border-white/15">
                   <i data-lucide="folder" class="w-3 h-3 text-blue-400"></i>
-                  <span>${file.targetFolder}</span>
+                  ${file.targetFolder}
                 </span>
               </td>
-              <td class="py-3.5 px-3 hidden md:table-cell text-xs text-slate-400 max-w-xs truncate" title="${file.geminiReason}">
-                ${file.geminiReason}
+              <td class="py-3.5 px-3 text-xs text-slate-400 max-w-xs hidden md:table-cell">
+                <span class="line-clamp-1 italic">${file.geminiReason}</span>
               </td>
-              <td class="py-3.5 px-3 whitespace-nowrap">
+              <td class="py-3.5 px-3">
                 ${statusHtml}
               </td>
-              <td class="py-3.5 pr-4 pl-2 text-right whitespace-nowrap">
+              <td class="py-3.5 pr-4 pl-2 text-right">
                 <button
                   onclick="openInspectModal('${file.id}')"
                   class="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
@@ -1817,56 +1925,76 @@
         const countLabel = document.getElementById('selectedCountLabel');
         const masterBox = document.getElementById('driveMasterCheckbox');
 
-        countLabel.textContent = count;
+        if (countLabel) countLabel.textContent = count;
 
         const files = getFilteredDriveFiles();
-        if (files.length > 0 && files.every(f => AppState.selectedDriveIds.has(f.id))) {
-          masterBox.checked = true;
-          masterBox.indeterminate = false;
-        } else if (count > 0) {
-          masterBox.checked = false;
-          masterBox.indeterminate = true;
-        } else {
-          masterBox.checked = false;
-          masterBox.indeterminate = false;
+        if (masterBox) {
+          if (files.length > 0 && files.every(f => AppState.selectedDriveIds.has(f.id))) {
+            masterBox.checked = true;
+            masterBox.indeterminate = false;
+          } else if (count > 0) {
+            masterBox.checked = false;
+            masterBox.indeterminate = true;
+          } else {
+            masterBox.checked = false;
+            masterBox.indeterminate = false;
+          }
         }
 
-        if (count > 0 && AppState.studioMode === 'drive') {
-          bar.classList.remove('translate-y-32', 'opacity-0', 'pointer-events-none');
-          bar.classList.add('translate-y-0', 'opacity-100');
-        } else {
-          bar.classList.add('translate-y-32', 'opacity-0', 'pointer-events-none');
-          bar.classList.remove('translate-y-0', 'opacity-100');
+        if (bar) {
+          if (count > 0 && AppState.studioMode === 'drive') {
+            bar.classList.remove('translate-y-32', 'opacity-0', 'pointer-events-none');
+            bar.classList.add('translate-y-0', 'opacity-100');
+          } else {
+            bar.classList.add('translate-y-32', 'opacity-0', 'pointer-events-none');
+            bar.classList.remove('translate-y-0', 'opacity-100');
+          }
         }
       }
 
-      function organizeSelectedFiles() {
+      async function organizeSelectedFiles() {
         const count = AppState.selectedDriveIds.size;
-        if (count === 0) return;
+        if (count === 0) {
+          showToast('Please select at least one file to route.', 'warning');
+          return;
+        }
 
-        playChimeSound();
-        triggerConfetti('burst');
+        const isSim = AppState.simulationMode;
+        showToast(isSim ? `🔍 Running simulation on ${count} files...` : `🚀 Moving ${count} files into cloud folders...`, 'info');
 
-        AppState.selectedDriveIds.forEach(id => {
-          const f = AppState.driveFiles.find(item => item.id === id);
-          if (f) f.status = 'routed';
-        });
-
-        AppState.selectedDriveIds.clear();
-        updateDriveActionBar();
-        renderDriveTable();
-
-        showToast(`✨ ${count} files routed to target cloud folders!`, 'success');
-
-        AppState.auditLogs.unshift({
-          id: `tx-${Date.now()}`,
-          action: 'Batch Cloud Folder Move',
-          target: `${count} items moved into structured taxonomy folders`,
-          timestamp: 'Just now',
-          status: 'Completed',
-          canUndo: true
-        });
-        renderDriveAuditLogs();
+        try {
+          const res = await fetch('/api/drive/organize', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              file_ids: Array.from(AppState.selectedDriveIds),
+              dry_run: isSim
+            })
+          });
+          const data = await res.json();
+          if (data.dry_run) {
+            triggerConfetti('sparkle');
+            playChimeSound();
+            showToast(`🛡️ Simulation Preview: ${data.planned_moves} files mapped to target folders. Toggle "Live Mode" above to execute.`, 'info');
+            AppState.selectedDriveIds.forEach(id => {
+              const f = AppState.driveFiles.find(item => item.id === id);
+              if (f) f.status = 'routed';
+            });
+            AppState.selectedDriveIds.clear();
+            updateDriveActionBar();
+            renderDriveTable();
+          } else {
+            triggerConfetti('full');
+            playChimeSound();
+            showToast(`✨ Success: ${data.moved_count} files moved to Google Drive folders!`, 'success');
+            AppState.selectedDriveIds.clear();
+            updateDriveActionBar();
+            await syncLiveDriveData();
+            await loadHistory();
+          }
+        } catch (err) {
+          showToast('Error organizing files: ' + err.message, 'error');
+        }
       }
 
       /**
@@ -1874,6 +2002,20 @@
        */
       function renderDriveDuplicatePairs() {
         const container = document.getElementById('driveDuplicatePairsContainer');
+        if (!container) return;
+
+        if (AppState.driveDuplicates.length === 0) {
+          container.innerHTML = `
+            <div class="p-8 rounded-2xl glass-card-dark text-center border border-white/10">
+              <i data-lucide="check-circle" class="w-8 h-8 text-emerald-400 mx-auto mb-2"></i>
+              <h4 class="text-sm font-bold text-white">No Byte-Exact Duplicates Found</h4>
+              <p class="text-xs text-slate-400 mt-1">Your Google Drive is clean with zero redundant MD5 checksum copies.</p>
+            </div>
+          `;
+          lucide.createIcons();
+          return;
+        }
+
         const dHtml = AppState.driveDuplicates.map((dup, idx) => {
           return `
             <div class="p-4 rounded-2xl glass-card-dark border ${dup.quarantined ? 'border-emerald-500/30 bg-emerald-950/20' : 'border-white/10'} transition-all">
@@ -1912,7 +2054,7 @@
                     <span class="text-[11px] font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1">
                       <i data-lucide="alert-triangle" class="w-3.5 h-3.5"></i> Duplicate Copy (Quarantine)
                     </span>
-                    <span class="text-[10px] font-mono text-amber-300/80 bg-amber-500/10 px-2 py-0.5 rounded">${dup.hash}</span>
+                    <span class="text-[10px] font-mono text-amber-300/80 bg-amber-500/10 px-2 py-0.5 rounded">${dup.hash || 'MD5 MATCH'}</span>
                   </div>
                   <h4 class="text-sm font-bold text-amber-200 truncate" title="${dup.copy}">${dup.copy}</h4>
                   <p class="text-xs text-slate-300 font-mono mt-1">${dup.size} · Target: _Duplicates/</p>
@@ -1926,34 +2068,74 @@
         lucide.createIcons();
       }
 
-      function quarantineAllDriveDuplicates() {
-        playChimeSound();
-        triggerConfetti('full');
+      async function quarantineAllDriveDuplicates() {
+        const dupIds = AppState.driveDuplicates.map(d => d.fileId).filter(Boolean);
+        if (dupIds.length === 0) {
+          showToast('No duplicate copies available to quarantine.', 'info');
+          return;
+        }
 
-        AppState.driveDuplicates.forEach(d => d.quarantined = true);
-        renderDriveDuplicatePairs();
+        const isSim = AppState.simulationMode;
+        showToast(isSim ? `🔍 Simulating quarantine of ${dupIds.length} duplicates...` : `🧹 Quarantining ${dupIds.length} duplicate copies...`, 'info');
 
-        showToast('🧹 All 9 duplicate files moved safely to "_Duplicates/"!', 'success');
-
-        AppState.auditLogs.unshift({
-          id: `tx-${Date.now()}`,
-          action: 'Drive MD5 Duplicate Quarantine',
-          target: '9 duplicates moved to _Duplicates/ (~45.2 MB space preserved)',
-          timestamp: 'Just now',
-          status: 'Quarantined',
-          canUndo: true
-        });
-        renderDriveAuditLogs();
+        try {
+          const res = await fetch('/api/drive/organize', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              file_ids: dupIds,
+              dry_run: isSim
+            })
+          });
+          const data = await res.json();
+          if (data.dry_run) {
+            triggerConfetti('sparkle');
+            playChimeSound();
+            showToast(`🛡️ Simulation: ${data.planned_moves} duplicate copies previewed for _Duplicates/ quarantine. Switch to Live Mode to execute.`, 'info');
+            AppState.driveDuplicates.forEach(d => d.quarantined = true);
+            renderDriveDuplicatePairs();
+          } else {
+            triggerConfetti('full');
+            playChimeSound();
+            showToast(`⚠️ Quarantined: ${data.moved_count} duplicate files moved to _Duplicates/!`, 'success');
+            await syncLiveDriveData();
+            await loadHistory();
+          }
+        } catch (err) {
+          showToast('Error during duplicate quarantine: ' + err.message, 'error');
+        }
       }
 
-      function quarantineSingleDrivePair(pairId) {
-        playChimeSound();
-        triggerConfetti('sparkle');
+      async function quarantineSingleDrivePair(pairId) {
         const pair = AppState.driveDuplicates.find(d => d.id === pairId);
-        if (pair) {
-          pair.quarantined = true;
-          renderDriveDuplicatePairs();
-          showToast(`Quarantined "${pair.copy}" to _Duplicates/`, 'success');
+        if (!pair || !pair.fileId) return;
+
+        const isSim = AppState.simulationMode;
+        showToast(isSim ? `🔍 Simulating quarantine for "${pair.copy}"...` : `🧹 Quarantining "${pair.copy}"...`, 'info');
+
+        try {
+          const res = await fetch('/api/drive/organize', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              file_ids: [pair.fileId],
+              dry_run: isSim
+            })
+          });
+          const data = await res.json();
+          if (data.dry_run) {
+            pair.quarantined = true;
+            renderDriveDuplicatePairs();
+            showToast(`🛡️ Simulation: "${pair.copy}" mapped to _Duplicates/ folder.`, 'info');
+          } else {
+            playChimeSound();
+            triggerConfetti('sparkle');
+            showToast(`⚠️ Quarantined "${pair.copy}" into _Duplicates/!`, 'success');
+            await syncLiveDriveData();
+            await loadHistory();
+          }
+        } catch (err) {
+          showToast('Error quarantining duplicate: ' + err.message, 'error');
         }
       }
 
@@ -1962,17 +2144,31 @@
        */
       function renderDriveAuditLogs() {
         const container = document.getElementById('driveAuditLogContainer');
+        if (!container) return;
+
+        if (AppState.auditLogs.length === 0) {
+          container.innerHTML = `
+            <div class="p-8 rounded-2xl glass-card-dark text-center border border-white/10">
+              <i data-lucide="history" class="w-8 h-8 text-blue-400 mx-auto mb-2"></i>
+              <h4 class="text-sm font-bold text-white">No Cloud Operations Yet</h4>
+              <p class="text-xs text-slate-400 mt-1">Actions performed in GoogleScanner are automatically tracked here for 100% reversible undo.</p>
+            </div>
+          `;
+          lucide.createIcons();
+          return;
+        }
+
         const logsHtml = AppState.auditLogs.map(log => {
           return `
             <div class="p-4 rounded-2xl glass-card-dark border border-white/10 flex items-center justify-between gap-4">
               <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-purple-300">
+                <div class="w-9 h-9 rounded-xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-purple-300 shrink-0">
                   <i data-lucide="history" class="w-4 h-4"></i>
                 </div>
                 <div>
                   <div class="flex items-center gap-2">
                     <h4 class="text-sm font-bold text-white">${log.action}</h4>
-                    <span class="px-2 py-0.5 rounded-full text-[10px] font-mono bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">${log.status}</span>
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-mono ${log.status === 'Rolled back' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'}">${log.status}</span>
                   </div>
                   <p class="text-xs text-slate-300 mt-0.5">${log.target}</p>
                   <p class="text-[11px] text-slate-400 font-mono mt-0.5">${log.timestamp}</p>
@@ -1996,37 +2192,74 @@
         lucide.createIcons();
       }
 
-      function restoreOriginalFolders() {
-        playChimeSound();
-        triggerConfetti('sparkle');
-
-        AppState.driveFiles.forEach(f => f.status = 'unorganized');
-        AppState.driveDuplicates.forEach(d => d.quarantined = false);
-
-        AppState.auditLogs.unshift({
-          id: `tx-${Date.now()}`,
-          action: '1-Click Cloud Rollback',
-          target: 'Restored all organized files and duplicate items back to original locations',
-          timestamp: 'Just now',
-          status: 'Restored',
-          canUndo: false
-        });
-
-        renderDriveTable();
-        renderDriveDuplicatePairs();
-        renderDriveAuditLogs();
-
-        showToast('⏪ Rollback complete: all items restored to original folders.', 'info');
+      async function restoreOriginalFolders() {
+        playSweepSound();
+        showToast('Reversing last cloud organization session...', 'info');
+        try {
+          const res = await fetch('/api/drive/undo', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({})
+          });
+          const data = await res.json();
+          if (data.success) {
+            playChimeSound();
+            triggerConfetti('full');
+            showToast(`⏪ Rollback complete: ${data.restored_count} files restored to original locations!`, 'success');
+            await syncLiveDriveData();
+            await loadHistory();
+          } else {
+            showToast(data.message || 'No active moves found to reverse.', 'warning');
+          }
+        } catch (err) {
+          showToast('Undo failed: ' + err.message, 'error');
+        }
       }
 
-      function rollbackSpecificTx(txId) {
+      async function rollbackSpecificTx(sessionId) {
         playSweepSound();
-        const log = AppState.auditLogs.find(l => l.id === txId);
-        if (log) {
-          log.status = 'Rolled back';
-          log.canUndo = false;
-          renderDriveAuditLogs();
-          showToast(`Reversed: ${log.action}`, 'info');
+        showToast(`Reversing session ${sessionId ? sessionId.substring(0, 8) : ''}...`, 'info');
+        try {
+          const res = await fetch('/api/drive/undo', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ session_id: sessionId })
+          });
+          const data = await res.json();
+          if (data.success) {
+            playChimeSound();
+            triggerConfetti('full');
+            showToast(`⏪ Reverted ${data.restored_count} files for session ${sessionId.substring(0, 8)}!`, 'success');
+            await syncLiveDriveData();
+            await loadHistory();
+          } else {
+            showToast(data.message || 'Undo could not be completed.', 'warning');
+          }
+        } catch (err) {
+          showToast('Undo failed: ' + err.message, 'error');
+        }
+      }
+
+      async function loadHistory() {
+        try {
+          const res = await fetch('/api/history');
+          if (!res.ok) return;
+          const sessions = await res.json();
+          if (sessions && sessions.length > 0) {
+            AppState.auditLogs = sessions.map((s) => ({
+              id: s.session_id,
+              action: `Cloud Move Session (${s.count} items)`,
+              target: `Files organized by Gemini rules (Rollback Session: ${s.session_id.substring(0, 8)})`,
+              timestamp: s.timestamp ? new Date(s.timestamp).toLocaleString() : 'Recent',
+              status: s.rolled_back ? 'Rolled back' : 'Completed',
+              canUndo: !s.rolled_back
+            }));
+            renderDriveAuditLogs();
+            const badge = document.getElementById('driveTabRollbackBadge');
+            if (badge) badge.textContent = AppState.auditLogs.filter(l => l.canUndo).length;
+          }
+        } catch (err) {
+          console.log('History load failed:', err);
         }
       }
 
@@ -2072,15 +2305,36 @@
         }, 200);
       }
 
-      function organizeSingleModalFile() {
+      async function organizeSingleModalFile() {
         if (!AppState.currentlyInspectingFile) return;
         const file = AppState.currentlyInspectingFile;
-        file.status = 'routed';
-        closeInspectModal();
-        triggerConfetti('burst');
-        playChimeSound();
-        showToast(`Routed "${file.name}" to "${file.targetFolder}"`, 'success');
-        renderDriveTable();
+        const isSim = AppState.simulationMode;
+
+        try {
+          const res = await fetch('/api/drive/organize', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              file_ids: [file.id],
+              dry_run: isSim
+            })
+          });
+          const data = await res.json();
+          closeInspectModal();
+          if (data.dry_run) {
+            file.status = 'routed';
+            renderDriveTable();
+            showToast(`🛡️ Simulation: "${file.name}" mapped to "${file.targetFolder}". Switch to Live Mode to execute.`, 'info');
+          } else {
+            playChimeSound();
+            triggerConfetti('burst');
+            showToast(`✨ Routed "${file.name}" to "${file.targetFolder}"`, 'success');
+            await syncLiveDriveData();
+            await loadHistory();
+          }
+        } catch (err) {
+          showToast('Error organizing file: ' + err.message, 'error');
+        }
       }
 
       /**
@@ -2172,60 +2426,143 @@
       }
 
       /**
+       * Real Storage Quota Loader
+       */
+      async function loadStorageQuota() {
+        try {
+          const res = await fetch('/api/account/storage');
+          if (!res.ok) return;
+          const data = await res.json();
+          if (data && data.quota) {
+            const q = data.quota;
+            const u = data.user;
+            
+            if (u) {
+              const avatar = document.getElementById('userAvatarImg');
+              const name = document.getElementById('userNameLabel');
+              const email = document.getElementById('userEmailLabel');
+              if (avatar && u.avatar) avatar.src = u.avatar;
+              if (name && u.name) name.textContent = u.name;
+              if (email && u.email) email.textContent = `(${u.email})`;
+            }
+
+            const totalLabel = document.getElementById('quotaTotalLabel');
+            const usedBadge = document.getElementById('quotaUsedBadge');
+            const usedFormatted = document.getElementById('quotaUsedFormatted');
+            const freeFormatted = document.getElementById('quotaFreeFormatted');
+            const otherFormatted = document.getElementById('quotaOtherFormatted');
+            const driveFormatted = document.getElementById('quotaDriveFormatted');
+            const legendPhotos = document.getElementById('legendPhotosVal');
+            const legendDrive = document.getElementById('legendDriveVal');
+            const legendFree = document.getElementById('legendFreeVal');
+
+            if (totalLabel) totalLabel.textContent = `(${q.limit_formatted} Account Plan)`;
+            if (usedBadge) usedBadge.textContent = `${q.total_used_percent}% Used`;
+            if (usedFormatted) usedFormatted.textContent = `${q.usage_formatted} used`;
+            if (freeFormatted) freeFormatted.textContent = `${q.free_formatted} Free`;
+            if (otherFormatted) otherFormatted.textContent = q.other_formatted;
+            if (driveFormatted) driveFormatted.textContent = q.drive_formatted;
+            if (legendPhotos) legendPhotos.textContent = q.other_formatted;
+            if (legendDrive) legendDrive.textContent = q.drive_formatted;
+            if (legendFree) legendFree.textContent = q.free_formatted;
+
+            const segPhotos = document.getElementById('barSegmentPhotos');
+            const segDrive = document.getElementById('barSegmentDrive');
+            const segFree = document.getElementById('barSegmentFree');
+
+            if (segPhotos) {
+              const wPhotos = Math.max(q.other_percent, 2);
+              segPhotos.style.width = `${wPhotos}%`;
+              segPhotos.title = `Google Photos & Cloud Media: ${q.other_formatted} (${q.other_percent}%)`;
+            }
+            if (segDrive) {
+              const wDrive = Math.max(q.drive_percent, 0.8);
+              segDrive.style.width = `${wDrive}%`;
+              segDrive.title = `Google Drive: ${q.drive_formatted} (${q.drive_percent}%)`;
+            }
+            if (segFree) {
+              segFree.title = `Free Space: ${q.free_formatted} (${q.free_percent}%)`;
+            }
+          }
+        } catch (err) {
+          console.log('Storage quota load failed:', err);
+        }
+      }
+
+      /**
        * Initialization
        */
       async function syncLiveDriveData() {
         try {
-          const res = await fetch('/api/drive/scan');
+          const isRecursive = AppState.scanRecursive || false;
+          const url = `/api/drive/scan?recursive=${isRecursive}`;
+          const res = await fetch(url);
           if (!res.ok) return;
           const data = await res.json();
-          if (data && data.files && data.files.length > 0) {
-            AppState.driveFiles = data.files.map((f) => ({
-              id: f.id,
-              name: f.name,
-              type: f.mime_type.includes('spreadsheet') ? 'sheets' :
-                    f.mime_type.includes('presentation') ? 'slides' :
-                    f.mime_type.includes('document') ? 'docs' :
-                    f.name.endsWith('.pdf') ? 'pdf' :
-                    f.name.endsWith('.docx') ? 'docx' : 'file',
-              size: f.size ? (f.size > 1048576 ? (f.size / 1048576).toFixed(1) + ' MB' : (f.size / 1024).toFixed(0) + ' KB') : 'Cloud File',
-              targetFolder: f.category,
-              geminiReason: f.reason,
-              status: f.is_duplicate ? 'duplicate' : 'unorganized',
-              modified: 'Google Drive',
-              selected: false
-            }));
+          if (data && data.files) {
+            AppState.driveFiles = data.files.map((f) => {
+              const mime = (f.mime_type || '').toLowerCase();
+              const name = (f.name || '').toLowerCase();
+              
+              let fileType = 'file';
+              if (mime.includes('spreadsheet') || name.endsWith('.xlsx') || name.endsWith('.xls') || name.endsWith('.csv')) {
+                fileType = 'sheets';
+              } else if (mime.includes('presentation') || name.endsWith('.pptx') || name.endsWith('.ppt')) {
+                fileType = 'slides';
+              } else if (mime.includes('document') || name.endsWith('.docx') || name.endsWith('.doc') || name.endsWith('.txt') || name.endsWith('.md')) {
+                fileType = 'docs';
+              } else if (mime.includes('pdf') || name.endsWith('.pdf')) {
+                fileType = 'pdfs';
+              } else if (mime.includes('image') || mime.includes('video') || mime.includes('zip') || name.endsWith('.zip') || name.endsWith('.jpg') || name.endsWith('.png')) {
+                fileType = 'archives';
+              }
+
+              const sizeFormatted = f.size ? (f.size > 1048576 ? (f.size / 1048576).toFixed(1) + ' MB' : (f.size / 1024).toFixed(0) + ' KB') : 'Cloud File';
+
+              return {
+                id: f.id,
+                name: f.name,
+                type: fileType,
+                size: sizeFormatted,
+                targetFolder: f.category || 'General',
+                geminiReason: f.reason || 'Categorized by file taxonomy rules.',
+                status: f.is_duplicate ? 'duplicate' : 'unorganized',
+                modified: 'Google Drive',
+                selected: false
+              };
+            });
 
             const dups = data.files.filter(f => f.is_duplicate);
             if (dups.length > 0) {
-              AppState.driveDuplicates = dups.map((d, i) => ({
-                id: `dup-${i}`,
-                fileId: d.id,
-                master: {
-                  name: d.master_name || 'Master File',
-                  size: d.size ? (d.size / 1024).toFixed(0) + ' KB' : 'Clean Copy',
-                  modified: 'Original'
-                },
-                copy: {
-                  name: d.name,
-                  size: d.size ? (d.size / 1024).toFixed(0) + ' KB' : 'Redundant Copy',
-                  modified: 'Target: _Duplicates/',
-                  path: '_Duplicates/'
-                }
-              }));
+              AppState.driveDuplicates = dups.map((d, i) => {
+                const sizeFormatted = d.size ? (d.size > 1048576 ? (d.size / 1048576).toFixed(1) + ' MB' : (d.size / 1024).toFixed(0) + ' KB') : 'Clean Copy';
+                return {
+                  id: `dup-${i}`,
+                  fileId: d.id,
+                  master: d.master_name || 'Original Master',
+                  copy: d.name,
+                  size: sizeFormatted,
+                  hash: 'MD5 MATCH',
+                  quarantined: false
+                };
+              });
+            } else {
+              AppState.driveDuplicates = [];
             }
 
+            updateCategoryCounts();
             renderDriveTable();
             renderDriveDuplicatePairs();
-            showToast(`✨ Live Google Drive Connected! Loaded ${data.total_files} files.`, 'success');
+            const scopeDesc = isRecursive ? 'Entire 5 TB Drive' : 'Root Folder';
+            showToast(`✨ Live Google Drive Connected (${scopeDesc})! Loaded ${data.total_files} items (${dups.length} duplicates).`, 'success');
           }
         } catch (err) {
-          console.log('Running standalone mode.');
+          console.log('Running standalone mode or fetch failed:', err);
         }
       }
 
       document.addEventListener('DOMContentLoaded', () => {
-        // Initial Renders
+        setStudioMode('drive');
         renderBurstGroups();
         renderScreenshots();
         renderAlbums();
@@ -2233,7 +2570,9 @@
         renderDriveDuplicatePairs();
         renderDriveAuditLogs();
         lucide.createIcons();
+        loadStorageQuota();
         syncLiveDriveData();
+        loadHistory();
       });
     </script>
   </body>
