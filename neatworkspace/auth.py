@@ -83,7 +83,15 @@ class AuthManager:
                 str(self.credentials_path),
                 self.scopes
             )
-            creds = flow.run_local_server(port=0)
+            print("\n" + "=" * 70)
+            print("🔑 GOOGLE OAUTH 2.0 AUTHORIZATION REQUIRED")
+            print("=" * 70)
+            creds = flow.run_local_server(
+                port=0,
+                prompt="consent",
+                authorization_prompt_message="👉 Visit this URL to authorize NeatWorkspace:\n{url}\n",
+                success_message="✅ NeatWorkspace authorized successfully! You can close this window."
+            )
 
             # Save credentials for next run
             self.token_path.parent.mkdir(parents=True, exist_ok=True)
