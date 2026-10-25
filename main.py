@@ -30,6 +30,7 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter
     )
 
+    parser.add_argument("--web", "--ui", action="store_true", help="Launch the interactive Google AI Studio web dashboard")
     parser.add_argument("--drive", action="store_true", help="Organize Google Drive files into universal categories")
     parser.add_argument("--photos", action="store_true", help="Cluster Google Photos into chronological albums and detect bursts")
     parser.add_argument("--duplicates", action="store_true", help="Scan and quarantine duplicate cloud files")
@@ -40,6 +41,15 @@ def main():
 
     args = parser.parse_args()
     auth = AuthManager()
+
+    # 0. Interactive Web Dashboard
+    if args.web:
+        import uvicorn
+        import webbrowser
+        print("\n✨ Launching GoogleScanner Web Dashboard at http://127.0.0.1:8000 ...")
+        webbrowser.open("http://127.0.0.1:8000")
+        uvicorn.run("neatworkspace.api:app", host="127.0.0.1", port=8000)
+        return
 
     # 1. Rollback
     if args.undo:

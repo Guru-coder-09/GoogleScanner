@@ -1,0 +1,6 @@
+{
+  "name": "GoogleScanner",
+  "description": "Breathtaking Gemini Aurora & Material 3 workstation for Drive & Photos declutter, cloud folder routing, and duplicate quarantine.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
