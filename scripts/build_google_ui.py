@@ -1,0 +1,1201 @@
+import os
+
+ui_html = """<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GoogleScanner — Declutter & organize your Google Drive</title>
+  <meta name="description" content="Route loose Drive files into Cloud Folders, quarantine MD5 duplicates, sort Google Photos and undo anything in one click." />
+  
+  <!-- Google Fonts: Google Sans & Google Sans Code -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Google+Sans+Code:wght@400;500&display=swap" />
+  
+  <!-- Official GoogleScanner CSS Bundle -->
+  <link rel="stylesheet" href="/assets/styles-CRGnuOa1.css" />
+
+  <script>
+    // Theme initialization
+    try {
+      if (localStorage.getItem("googlescanner-theme") === "dark") {
+        document.documentElement.classList.add("dark");
+      }
+    } catch(e) {}
+  </script>
+
+  <style>
+    body {
+      font-family: 'Google Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+    code, pre {
+      font-family: 'Google Sans Code', monospace;
+    }
+    .google-dot-multi {
+      background: conic-gradient(from 0deg, #4285F4 0% 25%, #EA4335 25% 50%, #FBBC05 50% 75%, #34A853 75% 100%);
+    }
+    /* Smooth modal transition */
+    .modal-backdrop {
+      background-color: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(6px);
+    }
+    /* Custom scrollbar matching Google Drive */
+    ::-webkit-scrollbar {
+      width: 7px;
+      height: 7px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(128, 128, 128, 0.25);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(128, 128, 128, 0.45);
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-background text-foreground antialiased selection:bg-primary-container selection:text-on-primary-container">
+
+  <!-- ================= TOP APP BAR ================= -->
+  <header class="sticky top-0 z-30 border-b border-border/70 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+    <div class="mx-auto flex max-w-[1440px] flex-wrap items-center justify-between gap-x-4 gap-y-3 px-4 py-3 md:px-6">
+      
+      <!-- Brand Logo -->
+      <div class="flex items-center gap-3">
+        <a href="/" class="flex shrink-0 items-center gap-2.5" aria-label="GoogleScanner home">
+          <span class="relative grid size-10 place-items-center rounded-2xl bg-surface-high shadow-xs">
+            <!-- Google Drive Scanner Icon -->
+            <svg class="size-5 text-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m21 21-4.34-4.34"></path>
+              <circle cx="11" cy="11" r="8"></circle>
+            </svg>
+            <!-- Official 4-color dot -->
+            <span class="google-dot-multi absolute right-1.5 bottom-1.5 size-2.5 rounded-full ring-2 ring-surface-high"></span>
+          </span>
+          <span class="text-[22px] font-medium leading-none tracking-tight text-foreground">
+            Google<span class="text-muted-foreground font-normal">Scanner</span>
+          </span>
+        </a>
+        <span class="hidden sm:inline-flex items-center rounded-full bg-primary-container/90 px-2.5 py-0.5 text-xs font-medium text-on-primary-container">
+          Drive & Photos Engine
+        </span>
+      </div>
+
+      <!-- Search Bar -->
+      <div class="order-last w-full lg:order-none lg:w-auto lg:max-w-[500px] lg:flex-1">
+        <div class="flex h-11 items-center gap-3 rounded-full bg-surface-high px-4 transition-all focus-within:bg-surface focus-within:ring-2 focus-within:ring-primary/40">
+          <svg class="size-4.5 shrink-0 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="m21 21-4.34-4.34"></path>
+            <circle cx="11" cy="11" r="8"></circle>
+          </svg>
+          <input id="searchInput" placeholder="Search in Google Drive files..." class="h-full min-w-0 flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground" />
+          <button id="clearSearchBtn" class="hidden text-muted-foreground hover:text-foreground">
+            <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 6 6 18M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Top Right Controls -->
+      <div class="flex items-center gap-2.5">
+        
+        <!-- Scan Scope Toggle -->
+        <div class="flex items-center rounded-full bg-surface-high p-1 text-xs">
+          <button id="scopeRootBtn" class="rounded-full px-3 py-1 font-medium bg-background text-foreground shadow-xs transition-all">
+            Root Drive
+          </button>
+          <button id="scopeRecursiveBtn" class="rounded-full px-3 py-1 text-muted-foreground transition-all hover:text-foreground">
+            Full Drive
+          </button>
+        </div>
+
+        <!-- Simulation Switch -->
+        <label class="hidden sm:flex items-center gap-2 cursor-pointer select-none rounded-full bg-surface px-3 py-1.5 border border-border transition-colors hover:bg-surface-high">
+          <input type="checkbox" id="simModeCheckbox" checked class="sr-only peer" />
+          <div class="w-8 h-4.5 bg-muted peer-checked:bg-primary rounded-full relative transition-colors after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-3.5 after:w-3.5 after:transition-all peer-checked:after:translate-x-3.5"></div>
+          <span class="text-xs font-medium text-foreground flex items-center gap-1.5">
+            <span>Dry-Run</span>
+            <span id="simBadge" class="size-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          </span>
+        </label>
+
+        <!-- Quick Undo Button -->
+        <button id="quickUndoBtn" title="Undo last cloud move" class="inline-flex h-9 items-center gap-1.5 rounded-full border border-border bg-surface px-3 text-xs font-medium text-foreground hover:bg-surface-high transition-colors">
+          <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+            <path d="M3 3v5h5"></path>
+            <path d="M12 7v5l4 2"></path>
+          </svg>
+          <span class="hidden md:inline">Undo</span>
+        </button>
+
+        <!-- Theme Toggle -->
+        <button id="themeToggleBtn" title="Toggle theme" class="grid size-9 place-items-center rounded-full border border-border bg-surface text-muted-foreground hover:text-foreground hover:bg-surface-high transition-colors">
+          <svg id="themeSunIcon" class="size-4.5 hidden dark:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="4"></circle>
+            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path>
+          </svg>
+          <svg id="themeMoonIcon" class="size-4.5 block dark:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
+          </svg>
+        </button>
+
+        <!-- User Profile Pill -->
+        <div id="userProfilePill" class="flex items-center gap-2 rounded-full border border-border bg-surface pl-1 pr-3 py-1 shadow-xs">
+          <img id="userAvatarImg" src="" alt="Guru Teja" class="size-7 rounded-full object-cover hidden" />
+          <div id="userAvatarFallback" class="grid size-7 place-items-center rounded-full bg-primary font-medium text-xs text-primary-foreground">
+            G
+          </div>
+          <div class="text-left hidden lg:block leading-tight">
+            <p id="userName" class="text-xs font-medium text-foreground truncate max-w-[110px]">Guru Teja</p>
+            <p id="userEmail" class="text-[11px] text-muted-foreground truncate max-w-[110px]">tejaguru027@gmail.com</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= MAIN WORKSPACE ================= -->
+  <main class="mx-auto max-w-[1440px] space-y-6 px-4 pt-5 pb-16 md:px-6">
+
+    <!-- 4 SUMMARY CARDS -->
+    <section aria-label="Drive summary" class="grid grid-cols-1 gap-3.5 sm:grid-cols-2 xl:grid-cols-4">
+      
+      <!-- Card 1: Files Evaluated -->
+      <article class="flex items-start gap-4 rounded-3xl bg-surface border border-border/70 p-5 transition-all hover:shadow-xs">
+        <span class="grid size-12 shrink-0 place-items-center rounded-2xl bg-docs-container text-docs">
+          <svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M10 16h.01"></path>
+            <path d="M2.212 11.577a2 2 0 0 0-.212.896V18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-5.527a2 2 0 0 0-.212-.896L18.55 5.11A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path>
+            <path d="M21.946 12.013H2.054"></path>
+            <path d="M6 16h.01"></path>
+          </svg>
+        </span>
+        <div class="min-w-0">
+          <p id="card1Label" class="text-xs font-medium text-muted-foreground">Evaluated Files</p>
+          <p id="cardTotalFiles" class="mt-0.5 text-[32px] font-normal tabular-nums leading-9 text-foreground">...</p>
+          <p id="card1Sub" class="mt-0.5 truncate text-xs text-muted-foreground">ready for cloud routing</p>
+        </div>
+      </article>
+
+      <!-- Card 2: Duplicates -->
+      <article class="flex items-start gap-4 rounded-3xl bg-surface border border-border/70 p-5 transition-all hover:shadow-xs">
+        <span class="grid size-12 shrink-0 place-items-center rounded-2xl bg-alert-container text-alert">
+          <svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect>
+            <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path>
+          </svg>
+        </span>
+        <div class="min-w-0">
+          <p class="text-xs font-medium text-muted-foreground">Duplicate Redundancies</p>
+          <p id="cardTotalDupes" class="mt-0.5 text-[32px] font-normal tabular-nums leading-9 text-foreground">...</p>
+          <p id="cardDupesSub" class="mt-0.5 truncate text-xs text-muted-foreground">exact MD5 copies</p>
+        </div>
+      </article>
+
+      <!-- Card 3: Google One Storage -->
+      <article class="flex items-start gap-4 rounded-3xl bg-surface border border-border/70 p-5 transition-all hover:shadow-xs">
+        <span class="grid size-12 shrink-0 place-items-center rounded-2xl bg-sheets-container text-sheets">
+          <svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+            <path d="M3.29 7 12 12l8.71-5"></path>
+            <path d="M12 22V12"></path>
+          </svg>
+        </span>
+        <div class="min-w-0 flex-1">
+          <p class="text-xs font-medium text-muted-foreground">Google One Storage</p>
+          <p id="cardStorageQuota" class="mt-0.5 text-[26px] font-normal tabular-nums leading-8 text-foreground">5.00 TB</p>
+          
+          <!-- Segmented Storage Bar -->
+          <div class="mt-2 h-2 w-full overflow-hidden rounded-full bg-surface-high flex">
+            <div id="storageBarDrive" title="Drive: 5.62 GB" class="bg-[#4285F4] h-full" style="width: 1%"></div>
+            <div id="storageBarPhotos" title="Photos: 214.01 GB" class="bg-[#EA4335] h-full" style="width: 5%"></div>
+            <div class="bg-transparent flex-1 h-full"></div>
+          </div>
+          <p id="storageDetails" class="mt-1 text-[11px] text-muted-foreground truncate">219.64 GB used (214.01 GB Photos, 5.62 GB Drive)</p>
+        </div>
+      </article>
+
+      <!-- Card 4: Categories -->
+      <article class="flex items-start gap-4 rounded-3xl bg-surface border border-border/70 p-5 transition-all hover:shadow-xs">
+        <span class="grid size-12 shrink-0 place-items-center rounded-2xl bg-slides-container text-slides">
+          <svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"></path>
+          </svg>
+        </span>
+        <div class="min-w-0">
+          <p class="text-xs font-medium text-muted-foreground">Universal Cloud Folders</p>
+          <p class="mt-0.5 text-[32px] font-normal tabular-nums leading-9 text-foreground">6</p>
+          <p class="mt-0.5 truncate text-xs text-muted-foreground">Projects, Docs, Media, Archives...</p>
+        </div>
+      </article>
+
+    </section>
+
+    <!-- ================= TAB NAVIGATION ================= -->
+    <div class="border-b border-border/60 pb-3">
+      <div role="tablist" class="scrollbar-thin flex gap-1.5 overflow-x-auto">
+        
+        <!-- Tab 1: Declutter -->
+        <button type="button" role="tab" id="tabBtnDeclutter" class="tab-trigger inline-flex h-10 shrink-0 cursor-pointer items-center gap-2 rounded-full px-5 text-sm font-medium transition-all bg-primary-container text-on-primary-container">
+          <svg class="size-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M2 9V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H20a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-1"></path>
+            <path d="M2 13h10"></path>
+            <path d="m9 16 3-3-3-3"></path>
+          </svg>
+          <span>Drive Declutter & Folder Router</span>
+        </button>
+
+        <!-- Tab 2: Duplicates -->
+        <button type="button" role="tab" id="tabBtnDuplicates" class="tab-trigger inline-flex h-10 shrink-0 cursor-pointer items-center gap-2 rounded-full px-5 text-sm font-medium text-muted-foreground hover:text-foreground transition-all">
+          <svg class="size-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect>
+            <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path>
+          </svg>
+          <span>Duplicate Quarantine</span>
+          <span id="tabDupeCountBadge" class="rounded-full bg-surface-high px-2 py-0.5 text-xs tabular-nums font-semibold">0</span>
+        </button>
+
+        <!-- Tab 3: Photos -->
+        <button type="button" role="tab" id="tabBtnPhotos" class="tab-trigger inline-flex h-10 shrink-0 cursor-pointer items-center gap-2 rounded-full px-5 text-sm font-medium text-muted-foreground hover:text-foreground transition-all">
+          <svg class="size-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+            <path d="m21 15-5-5L5 21"></path>
+          </svg>
+          <span>Google Photos Sorter</span>
+        </button>
+
+        <!-- Tab 4: Rollback -->
+        <button type="button" role="tab" id="tabBtnRollback" class="tab-trigger inline-flex h-10 shrink-0 cursor-pointer items-center gap-2 rounded-full px-5 text-sm font-medium text-muted-foreground hover:text-foreground transition-all">
+          <svg class="size-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+            <path d="M3 3v5h5"></path>
+            <path d="M12 7v5l4 2"></path>
+          </svg>
+          <span>Cloud Rollback & History</span>
+        </button>
+
+      </div>
+    </div>
+
+    <!-- ================= TAB CONTENT 1: DRIVE DECLUTTER ================= -->
+    <div id="panelDeclutter" class="space-y-5">
+      
+      <!-- Action Toolbar -->
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h2 class="text-xl font-medium text-foreground">Drive Declutter & Folder Router</h2>
+          <p id="declutterSubtitle" class="text-sm text-muted-foreground">Scanning drive contents...</p>
+        </div>
+
+        <div class="flex items-center gap-2.5">
+          <button id="previewRoutingBtn" class="inline-flex h-10 items-center gap-2 rounded-full border border-primary/40 bg-surface px-5 text-sm font-medium text-primary hover:bg-primary-container/30 transition-colors">
+            <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+            <span>Preview Routing (Dry-Run)</span>
+          </button>
+
+          <button id="executeRoutingBtn" class="inline-flex h-10 items-center gap-2 rounded-full bg-primary px-5 text-sm font-medium text-primary-foreground shadow-xs hover:opacity-90 transition-opacity">
+            <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M5 12h14"></path>
+              <path d="m12 5 7 7-7 7"></path>
+            </svg>
+            <span>Organize Selected Files</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Filter Chips -->
+      <div class="flex flex-wrap gap-2" role="group" aria-label="Category filter">
+        <button data-cat="all" class="cat-chip inline-flex h-8 items-center gap-1.5 rounded-lg border px-3 text-xs font-medium transition-all bg-primary-container text-on-primary-container border-transparent">
+          All Files (<span id="chipAllCount">0</span>)
+        </button>
+        <button data-cat="Documents" class="cat-chip inline-flex h-8 items-center gap-1.5 rounded-lg border border-border bg-transparent text-muted-foreground px-3 text-xs font-medium hover:text-foreground">
+          Google Docs (<span id="chipDocsCount">0</span>)
+        </button>
+        <button data-cat="Spreadsheets" class="cat-chip inline-flex h-8 items-center gap-1.5 rounded-lg border border-border bg-transparent text-muted-foreground px-3 text-xs font-medium hover:text-foreground">
+          Sheets & Data (<span id="chipSheetsCount">0</span>)
+        </button>
+        <button data-cat="Presentations" class="cat-chip inline-flex h-8 items-center gap-1.5 rounded-lg border border-border bg-transparent text-muted-foreground px-3 text-xs font-medium hover:text-foreground">
+          Presentations (<span id="chipSlidesCount">0</span>)
+        </button>
+        <button data-cat="Media" class="cat-chip inline-flex h-8 items-center gap-1.5 rounded-lg border border-border bg-transparent text-muted-foreground px-3 text-xs font-medium hover:text-foreground">
+          Images & Media (<span id="chipMediaCount">0</span>)
+        </button>
+        <button data-cat="Archives" class="cat-chip inline-flex h-8 items-center gap-1.5 rounded-lg border border-border bg-transparent text-muted-foreground px-3 text-xs font-medium hover:text-foreground">
+          Archives (<span id="chipArchivesCount">0</span>)
+        </button>
+      </div>
+
+      <!-- Main File Table -->
+      <div class="overflow-hidden rounded-3xl border border-border bg-background shadow-xs">
+        <!-- Header row -->
+        <div class="grid grid-cols-[44px_minmax(0,2.5fr)_90px_minmax(0,1.4fr)_minmax(0,1.2fr)_120px] items-center gap-x-3 border-b border-border bg-surface px-4 py-3 text-xs font-medium text-muted-foreground">
+          <span class="grid place-items-center">
+            <input type="checkbox" id="selectAllCheckbox" class="h-4 w-4 rounded-sm border-primary text-primary focus:ring-primary/30" />
+          </span>
+          <span>File & Preview</span>
+          <span class="hidden md:block">Size</span>
+          <span class="hidden md:block">Target Cloud Folder</span>
+          <span class="hidden lg:block">Classification</span>
+          <span class="text-right">Actions</span>
+        </div>
+
+        <!-- Table Rows Container -->
+        <div id="fileTableList" class="scrollbar-thin max-h-[640px] overflow-y-auto divide-y divide-border">
+          <div class="p-12 text-center text-muted-foreground">
+            <div class="inline-block size-6 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
+            <p class="mt-2 text-sm">Connecting to Google Drive API...</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ================= TAB CONTENT 2: DUPLICATE QUARANTINE ================= -->
+    <div id="panelDuplicates" class="space-y-5 hidden">
+      
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h2 class="text-xl font-medium text-foreground">Duplicate Quarantine Station</h2>
+          <p class="text-sm text-muted-foreground">Exact byte-for-byte copies detected via native MD5 checksums. Original files stay put; duplicates move into <code class="text-xs bg-surface-high px-1.5 py-0.5 rounded">_Duplicates/</code>.</p>
+        </div>
+
+        <button id="quarantineAllBtn" class="inline-flex h-10 items-center gap-2 rounded-full bg-alert-container px-5 text-sm font-medium text-alert hover:opacity-90 transition-opacity">
+          <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+          </svg>
+          <span id="quarantineBtnText">Quarantine All Duplicates</span>
+        </button>
+      </div>
+
+      <div id="duplicatesList" class="grid gap-4 lg:grid-cols-2">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+
+    <!-- ================= TAB CONTENT 3: PHOTOS SORTER ================= -->
+    <div id="panelPhotos" class="space-y-5 hidden">
+      
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h2 class="text-xl font-medium text-foreground">Google Photos & Media Sorter</h2>
+          <p id="photosHeaderSub" class="text-sm text-muted-foreground">Photos and videos detected across your Google account and Drive storage.</p>
+        </div>
+
+        <button id="organizePhotosBtn" class="inline-flex h-10 items-center gap-2 rounded-full bg-primary px-5 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity">
+          <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 16v1a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3v-1m-4-8-4-4m0 0L8 8m4-4v12"></path>
+          </svg>
+          <span>Route Media to 40_Media/</span>
+        </button>
+      </div>
+
+      <!-- Quota Notice Card -->
+      <div class="flex items-center gap-4 rounded-3xl bg-surface border border-border/80 p-5">
+        <span class="grid size-12 place-items-center rounded-2xl bg-amber-500/15 text-amber-600 dark:text-amber-400">
+          <svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+            <path d="m21 15-5-5L5 21"></path>
+          </svg>
+        </span>
+        <div>
+          <h3 class="text-sm font-semibold text-foreground">Google Photos Cloud Quota</h3>
+          <p class="text-xs text-muted-foreground mt-0.5">
+            Your Google Account has <strong class="text-foreground">214.01 GB</strong> dedicated to Google Photos in your 5.00 TB Google One membership. Below are the media files stored in your Drive space ready for clustering into structured albums.
+          </p>
+        </div>
+      </div>
+
+      <!-- Photos Grid -->
+      <div id="photosGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3.5">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+
+    <!-- ================= TAB CONTENT 4: ROLLBACK & HISTORY ================= -->
+    <div id="panelRollback" class="space-y-5 hidden">
+      <div>
+        <h2 class="text-xl font-medium text-foreground">Cloud Rollback & Operation History</h2>
+        <p class="text-sm text-muted-foreground">Every organization session is recorded with zero loss. Rollback any action with 1-click restoration.</p>
+      </div>
+
+      <div id="rollbackSessionsList" class="space-y-3">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ================= PREVIEW MODAL ================= -->
+  <div id="previewModal" class="fixed inset-0 z-50 hidden place-items-center p-4 modal-backdrop">
+    <div class="relative w-full max-w-2xl rounded-3xl bg-surface border border-border p-6 shadow-2xl transition-all">
+      <div class="flex items-start justify-between gap-4 border-b border-border pb-4">
+        <div class="min-w-0">
+          <h3 id="modalFileName" class="text-lg font-medium text-foreground truncate">File Preview</h3>
+          <p id="modalFileSub" class="text-xs text-muted-foreground mt-0.5">Google Drive item</p>
+        </div>
+        <button id="closeModalBtn" class="grid size-8 place-items-center rounded-full text-muted-foreground hover:bg-surface-high hover:text-foreground">
+          <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 6 6 18M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+
+      <div id="modalPreviewBody" class="py-6 flex flex-col items-center justify-center min-h-[260px]">
+        <!-- Image or Icon preview -->
+      </div>
+
+      <div class="grid grid-cols-2 gap-3 rounded-2xl bg-surface-high p-4 text-xs">
+        <div>
+          <span class="text-muted-foreground">Target Destination:</span>
+          <p id="modalTargetFolder" class="font-medium text-foreground">--</p>
+        </div>
+        <div>
+          <span class="text-muted-foreground">Classification:</span>
+          <p id="modalReason" class="font-medium text-foreground">--</p>
+        </div>
+        <div>
+          <span class="text-muted-foreground">File Size:</span>
+          <p id="modalFileSize" class="font-medium text-foreground">--</p>
+        </div>
+        <div>
+          <span class="text-muted-foreground">MIME Type:</span>
+          <p id="modalFileMime" class="font-medium text-foreground truncate">--</p>
+        </div>
+      </div>
+
+      <div class="mt-5 flex justify-end gap-2.5">
+        <button id="modalCloseBtn2" class="rounded-full border border-border px-5 py-2 text-xs font-medium text-foreground hover:bg-surface-high">
+          Close
+        </button>
+        <a id="modalDriveLink" href="#" target="_blank" class="inline-flex items-center gap-1.5 rounded-full bg-primary px-5 py-2 text-xs font-medium text-primary-foreground hover:opacity-90">
+          <span>Open in Google Drive</span>
+          <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+            <polyline points="15 3 21 3 21 9"></polyline>
+            <line x1="10" y1="14" x2="21" y2="3"></line>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= SIMULATION / DIFF MODAL ================= -->
+  <div id="diffModal" class="fixed inset-0 z-50 hidden place-items-center p-4 modal-backdrop">
+    <div class="relative w-full max-w-3xl rounded-3xl bg-surface border border-border p-6 shadow-2xl max-h-[85vh] flex flex-col">
+      <div class="flex items-start justify-between border-b border-border pb-4">
+        <div>
+          <div class="flex items-center gap-2">
+            <h3 id="diffModalTitle" class="text-lg font-medium text-foreground">Simulation Preview (Dry-Run)</h3>
+            <span id="diffModalBadge" class="rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-xs font-medium text-emerald-600 dark:text-emerald-400">Zero Risk</span>
+          </div>
+          <p id="diffModalSub" class="text-xs text-muted-foreground mt-0.5">Nothing in your Google Drive will be deleted. Files will be organized into their corresponding folders.</p>
+        </div>
+        <button id="closeDiffBtn" class="grid size-8 place-items-center rounded-full text-muted-foreground hover:bg-surface-high hover:text-foreground">
+          <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 6 6 18M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+
+      <div id="diffModalBody" class="flex-1 overflow-y-auto py-4 space-y-2.5">
+        <!-- Diff moves list -->
+      </div>
+
+      <div class="border-t border-border pt-4 flex items-center justify-between">
+        <p id="diffSummaryCount" class="text-xs text-muted-foreground">0 moves planned</p>
+        <div class="flex gap-2">
+          <button id="cancelDiffBtn" class="rounded-full border border-border px-5 py-2 text-xs font-medium text-foreground hover:bg-surface-high">
+            Close
+          </button>
+          <button id="confirmExecuteBtn" class="inline-flex items-center gap-1.5 rounded-full bg-primary px-5 py-2 text-xs font-medium text-primary-foreground hover:opacity-90">
+            <span>Execute Live Moves</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= CLIENT APPLICATION LOGIC ================= -->
+  <script>
+    // State management
+    const state = {
+      isRecursive: false,
+      isDryRun: true,
+      currentTab: 'declutter',
+      selectedFilter: 'all',
+      searchQuery: '',
+      files: [],
+      duplicates: [],
+      photos: [],
+      sessions: [],
+      selectedFileIds: new Set(),
+      storage: null
+    };
+
+    // Format utility
+    function formatBytes(bytes) {
+      if (!bytes || bytes === 0) return '0 B';
+      const k = 1024;
+      const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+    }
+
+    // Determine category from backend category string or mime
+    function getFileCategory(file) {
+      const cat = file.category || '';
+      const mime = (file.mime_type || file.mimeType || '').toLowerCase();
+      const name = (file.name || '').toLowerCase();
+
+      if (cat.includes('Documents')) return 'Documents';
+      if (cat.includes('Spreadsheets')) return 'Spreadsheets';
+      if (cat.includes('Presentations')) return 'Presentations';
+      if (cat.includes('Media') || mime.startsWith('image/') || mime.startsWith('video/')) return 'Media';
+      if (cat.includes('Archives') || mime.includes('zip') || name.endsWith('.zip')) return 'Archives';
+      if (cat.includes('_Duplicates') || file.is_duplicate) return '_Duplicates';
+
+      if (mime.includes('spreadsheet') || mime.includes('excel')) return 'Spreadsheets';
+      if (mime.includes('presentation') || mime.includes('powerpoint')) return 'Presentations';
+      if (mime.includes('pdf')) return 'Documents';
+      if (mime.includes('document') || mime.includes('word')) return 'Documents';
+
+      return 'Other Files';
+    }
+
+    function getTargetFolder(file) {
+      if (file.is_duplicate) return '_Duplicates/';
+      const cat = getFileCategory(file);
+      switch(cat) {
+        case 'Documents': return '20_Documents/';
+        case 'Spreadsheets': return '30_Data/';
+        case 'Presentations': return '20_Documents/';
+        case 'Media': return '40_Media/';
+        case 'Archives': return '50_Archives/';
+        default: return '10_Projects/';
+      }
+    }
+
+    // Icons
+    function getFileIcon(file) {
+      const cat = getFileCategory(file);
+      switch(cat) {
+        case 'Documents':
+          return `<svg class="size-5 shrink-0 text-docs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M10 9H8"></path><path d="M16 13H8"></path><path d="M16 17H8"></path></svg>`;
+        case 'Spreadsheets':
+          return `<svg class="size-5 shrink-0 text-sheets" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"></path><path d="M14 2v5a1 1 0 0 0 1 1h5"></path><path d="M8 13h2"></path><path d="M14 13h2"></path><path d="M8 17h2"></path><path d="M14 17h2"></path></svg>`;
+        case 'Presentations':
+          return `<svg class="size-5 shrink-0 text-slides" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="14" x="3" y="3" rx="2"></rect><path d="M8 21h8"></path><path d="M12 17v4"></path></svg>`;
+        case 'Media':
+          return `<svg class="size-5 shrink-0 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><path d="m21 15-5-5L5 21"></path></svg>`;
+        case 'Archives':
+          return `<svg class="size-5 shrink-0 text-purple-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"></path><path d="m3.3 7 8.7 5 8.7-5"></path><path d="M12 22V12"></path></svg>`;
+        default:
+          return `<svg class="size-5 shrink-0 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path></svg>`;
+      }
+    }
+
+    // ================= DATA FETCHING =================
+    async function loadStorage() {
+      try {
+        const res = await fetch('/api/account/storage');
+        const data = await res.json();
+        state.storage = data;
+        
+        // Populate profile
+        if (data.user) {
+          document.getElementById('userName').textContent = data.user.name || 'Guru Teja';
+          document.getElementById('userEmail').textContent = data.user.email || 'tejaguru027@gmail.com';
+          if (data.user.avatar) {
+            const img = document.getElementById('userAvatarImg');
+            img.src = data.user.avatar;
+            img.classList.remove('hidden');
+            document.getElementById('userAvatarFallback').classList.add('hidden');
+          }
+        }
+
+        // Populate quota card
+        if (data.quota) {
+          document.getElementById('cardStorageQuota').textContent = data.quota.limit_formatted || '5.00 TB';
+          document.getElementById('storageDetails').textContent = `${data.quota.usage_formatted} used (${data.quota.other_formatted} Photos, ${data.quota.drive_formatted} Drive)`;
+
+          // Segmented bar
+          const drivePct = Math.max(1, data.quota.drive_percent || 1);
+          const photosPct = Math.max(2, data.quota.other_percent || 4);
+          document.getElementById('storageBarDrive').style.width = drivePct + '%';
+          document.getElementById('storageBarPhotos').style.width = photosPct + '%';
+        }
+
+      } catch (err) {
+        console.error('Failed to load storage:', err);
+      }
+    }
+
+    async function loadScanData() {
+      const listEl = document.getElementById('fileTableList');
+      listEl.innerHTML = `
+        <div class="p-12 text-center text-muted-foreground">
+          <div class="inline-block size-6 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
+          <p class="mt-2 text-sm">Scanning Google Drive files (recursive=${state.isRecursive})...</p>
+        </div>
+      `;
+
+      try {
+        const res = await fetch(`/api/drive/scan?recursive=${state.isRecursive}`);
+        const data = await res.json();
+        state.files = data.files || [];
+        
+        // Extract duplicates
+        state.duplicates = state.files.filter(f => f.is_duplicate);
+
+        // Filter media files for photos tab
+        state.photos = state.files.filter(f => getFileCategory(f) === 'Media');
+
+        updateCounts();
+        renderTable();
+        renderDuplicates();
+        renderPhotos();
+
+      } catch (err) {
+        listEl.innerHTML = `
+          <div class="p-8 text-center text-alert">
+            <p class="font-medium">Failed to scan Google Drive</p>
+            <p class="text-xs text-muted-foreground mt-1">${err.message}</p>
+          </div>
+        `;
+      }
+    }
+
+    async function loadHistory() {
+      try {
+        const res = await fetch('/api/history');
+        state.sessions = await res.json();
+        renderRollback();
+      } catch (err) {
+        console.error('Failed to load history:', err);
+      }
+    }
+
+    // ================= UI UPDATES =================
+    function updateCounts() {
+      const total = state.files.length;
+      document.getElementById('cardTotalFiles').textContent = total;
+      document.getElementById('card1Label').textContent = state.isRecursive ? 'Full Drive Files' : 'Root Drive Files';
+      document.getElementById('declutterSubtitle').textContent = `${total} files evaluated across your Google Drive`;
+
+      // Duplicates
+      const dupeCount = state.duplicates.length;
+      document.getElementById('cardTotalDupes').textContent = dupeCount;
+      document.getElementById('tabDupeCountBadge').textContent = dupeCount;
+      document.getElementById('quarantineBtnText').textContent = dupeCount > 0 ? `Quarantine ${dupeCount} Duplicates` : 'No Duplicates Found';
+
+      // Chips
+      const counts = { all: total, Documents: 0, Spreadsheets: 0, Presentations: 0, Media: 0, Archives: 0 };
+      state.files.forEach(f => {
+        const cat = getFileCategory(f);
+        if (counts[cat] !== undefined) counts[cat]++;
+      });
+
+      document.getElementById('chipAllCount').textContent = counts.all;
+      document.getElementById('chipDocsCount').textContent = counts.Documents;
+      document.getElementById('chipSheetsCount').textContent = counts.Spreadsheets;
+      document.getElementById('chipSlidesCount').textContent = counts.Presentations;
+      document.getElementById('chipMediaCount').textContent = counts.Media;
+      document.getElementById('chipArchivesCount').textContent = counts.Archives;
+    }
+
+    // ================= RENDER TABLE =================
+    function renderTable() {
+      const container = document.getElementById('fileTableList');
+      const q = state.searchQuery.toLowerCase();
+      
+      const filtered = state.files.filter(f => {
+        if (state.selectedFilter !== 'all' && getFileCategory(f) !== state.selectedFilter) return false;
+        if (q && !(f.name || '').toLowerCase().includes(q)) return false;
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="p-12 text-center text-muted-foreground">
+            <svg class="mx-auto size-10 opacity-40 mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+            <p class="text-sm font-medium">No files found matching criteria</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = filtered.map(f => {
+        const isChecked = state.selectedFileIds.has(f.id);
+        const iconHtml = getFileIcon(f);
+        const target = getTargetFolder(f);
+        const reason = f.reason || 'Smart folder destination';
+        const sizeStr = formatBytes(f.size);
+        const mimeStr = f.mime_type || f.mimeType || 'file';
+
+        // Thumbnail tag
+        const thumbImg = f.thumbnail_link 
+          ? `<img src="${f.thumbnail_link}" alt="${f.name}" class="size-8 rounded-lg object-cover shadow-xs border border-border shrink-0 cursor-pointer hover:scale-110 transition-transform" onclick="openPreview('${f.id}')" onerror="this.style.display='none'" />` 
+          : '';
+
+        return `
+          <div class="grid grid-cols-[44px_minmax(0,2.5fr)_90px_minmax(0,1.4fr)_minmax(0,1.2fr)_120px] items-center gap-x-3 px-4 py-2.5 text-xs transition-colors hover:bg-surface/80">
+            <!-- Checkbox -->
+            <div class="grid place-items-center">
+              <input type="checkbox" data-id="${f.id}" ${isChecked ? 'checked' : ''} class="file-chk h-4 w-4 rounded-sm border-primary text-primary focus:ring-primary/30" />
+            </div>
+
+            <!-- Name and preview thumbnail -->
+            <div class="flex items-center gap-3 min-w-0 pr-2">
+              ${thumbImg || iconHtml}
+              <div class="min-w-0">
+                <a href="${f.web_view_link || '#'}" target="_blank" class="block truncate font-medium text-foreground hover:text-primary transition-colors">
+                  ${f.name}
+                </a>
+                <span class="block text-[11px] text-muted-foreground truncate">
+                  ${mimeStr}
+                </span>
+              </div>
+            </div>
+
+            <!-- Size -->
+            <div class="hidden md:block font-medium tabular-nums text-foreground">
+              ${sizeStr}
+            </div>
+
+            <!-- Target Folder -->
+            <div class="hidden md:block">
+              <span class="inline-flex items-center gap-1 rounded-full bg-surface-high px-2.5 py-1 text-[11px] font-medium text-foreground">
+                <svg class="size-3 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"></path></svg>
+                <span>${target}</span>
+              </span>
+            </div>
+
+            <!-- Classification / Reason -->
+            <div class="hidden lg:block truncate text-muted-foreground text-[11px]" title="${reason}">
+              ${reason}
+            </div>
+
+            <!-- Action -->
+            <div class="flex items-center justify-end gap-1.5">
+              <button onclick="openPreview('${f.id}')" title="Quick Preview" class="grid size-8 place-items-center rounded-full text-muted-foreground hover:bg-surface-high hover:text-foreground transition-colors">
+                <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              </button>
+              <a href="${f.web_view_link || '#'}" target="_blank" title="Open in Google Drive" class="grid size-8 place-items-center rounded-full text-muted-foreground hover:bg-surface-high hover:text-primary transition-colors">
+                <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+              </a>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // Attach checkbox listeners
+      container.querySelectorAll('.file-chk').forEach(chk => {
+        chk.addEventListener('change', (e) => {
+          const id = e.target.getAttribute('data-id');
+          if (e.target.checked) state.selectedFileIds.add(id);
+          else state.selectedFileIds.delete(id);
+        });
+      });
+    }
+
+    // ================= RENDER DUPLICATES =================
+    function renderDuplicates() {
+      const container = document.getElementById('duplicatesList');
+      if (state.duplicates.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-2 p-12 text-center rounded-3xl bg-surface border border-border">
+            <svg class="mx-auto size-12 text-emerald-500 mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+            <p class="text-base font-medium text-foreground">Zero Duplicate Redundancies Found</p>
+            <p class="text-xs text-muted-foreground mt-1">Your Google Drive has no duplicate byte collisions.</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = state.duplicates.map(d => {
+        const thumbImg = d.thumbnail_link 
+          ? `<img src="${d.thumbnail_link}" alt="${d.name}" class="size-10 rounded-xl object-cover shrink-0 border border-border" />`
+          : `<span class="grid size-10 place-items-center rounded-xl bg-alert-container text-alert shrink-0"><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg></span>`;
+
+        return `
+          <div class="rounded-3xl bg-surface border border-border p-5 space-y-3.5">
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex items-center gap-3 min-w-0">
+                ${thumbImg}
+                <div class="min-w-0">
+                  <p class="font-medium text-sm text-foreground truncate">${d.name}</p>
+                  <p class="text-xs text-muted-foreground">${formatBytes(d.size)} &bull; ${d.mime_type || 'file'}</p>
+                </div>
+              </div>
+              <span class="rounded-full bg-alert-container px-2.5 py-0.5 text-xs font-semibold text-alert shrink-0">
+                Duplicate Copy
+              </span>
+            </div>
+
+            <!-- Master vs Copy info -->
+            <div class="rounded-2xl bg-surface-high p-3 text-xs space-y-1.5">
+              <div class="flex items-center justify-between text-muted-foreground">
+                <span>Original Master File:</span>
+                <span class="font-medium text-foreground truncate max-w-[200px]">${d.master_name || 'Protected in Drive'}</span>
+              </div>
+              <div class="flex items-center justify-between text-muted-foreground">
+                <span>Destination Target:</span>
+                <span class="text-primary font-medium">_Duplicates/</span>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-end gap-2 pt-1">
+              <button onclick="openPreview('${d.id}')" class="inline-flex items-center gap-1 rounded-full border border-border px-3.5 py-1.5 text-xs font-medium text-foreground hover:bg-surface-high transition-colors">
+                <span>Preview</span>
+              </button>
+              <a href="${d.web_view_link || '#'}" target="_blank" class="inline-flex items-center gap-1 rounded-full bg-surface-high px-3.5 py-1.5 text-xs font-medium text-foreground hover:bg-border transition-colors">
+                <span>Open in Drive</span>
+                <svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+              </a>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // ================= RENDER PHOTOS =================
+    function renderPhotos() {
+      const grid = document.getElementById('photosGrid');
+      if (state.photos.length === 0) {
+        grid.innerHTML = `
+          <div class="col-span-full p-12 text-center rounded-3xl bg-surface border border-border">
+            <svg class="mx-auto size-10 text-muted-foreground mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><path d="m21 15-5-5L5 21"></path></svg>
+            <p class="text-sm font-medium text-foreground">No media files currently in root Drive</p>
+            <p class="text-xs text-muted-foreground mt-1">Switch to "Full Drive" scan to search subdirectories.</p>
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = state.photos.map(p => {
+        const thumb = p.thumbnail_link || '';
+        return `
+          <div onclick="openPreview('${p.id}')" class="group relative aspect-square overflow-hidden rounded-2xl bg-surface border border-border cursor-pointer transition-all hover:shadow-md">
+            ${thumb 
+              ? `<img src="${thumb}" alt="${p.name}" class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />`
+              : `<div class="grid h-full place-items-center text-muted-foreground"><svg class="size-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><path d="m21 15-5-5L5 21"></path></svg></div>`
+            }
+            <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-2 text-white">
+              <p class="truncate text-[11px] font-medium">${p.name}</p>
+              <p class="text-[10px] text-white/70">${formatBytes(p.size)}</p>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // ================= RENDER ROLLBACK =================
+    function renderRollback() {
+      const container = document.getElementById('rollbackSessionsList');
+      if (state.sessions.length === 0) {
+        container.innerHTML = `
+          <div class="p-12 text-center rounded-3xl bg-surface border border-border">
+            <svg class="mx-auto size-10 text-muted-foreground mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M12 7v5l4 2"></path></svg>
+            <p class="text-sm font-medium text-foreground">No Organization Transactions Recorded Yet</p>
+            <p class="text-xs text-muted-foreground mt-1">Actions performed will appear here with instant 1-click restore.</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = state.sessions.map(s => {
+        return `
+          <div class="flex flex-wrap items-center justify-between gap-4 rounded-3xl bg-surface border border-border p-4.5">
+            <div class="flex items-center gap-3">
+              <span class="grid size-10 place-items-center rounded-xl bg-primary-container text-on-primary-container">
+                <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M12 7v5l4 2"></path></svg>
+              </span>
+              <div>
+                <p class="text-sm font-medium text-foreground">Session: ${s.session_id || 'Move Session'}</p>
+                <p class="text-xs text-muted-foreground">${s.file_count || 0} files moved &bull; ${s.timestamp || ''}</p>
+              </div>
+            </div>
+
+            <button onclick="undoSession('${s.session_id}')" class="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-4 py-1.5 text-xs font-medium text-foreground hover:bg-surface-high transition-colors">
+              <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+              <span>Restore Moves</span>
+            </button>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // ================= PREVIEW MODAL =================
+    function openPreview(fileId) {
+      const file = state.files.find(f => f.id === fileId);
+      if (!file) return;
+
+      document.getElementById('modalFileName').textContent = file.name;
+      document.getElementById('modalFileSub').textContent = `${file.mime_type || file.mimeType || 'file'}`;
+      document.getElementById('modalTargetFolder').textContent = getTargetFolder(file);
+      document.getElementById('modalReason').textContent = file.reason || getTargetFolder(file);
+      document.getElementById('modalFileSize').textContent = formatBytes(file.size);
+      document.getElementById('modalFileMime').textContent = file.mime_type || file.mimeType || '--';
+      document.getElementById('modalDriveLink').href = file.web_view_link || '#';
+
+      const previewBody = document.getElementById('modalPreviewBody');
+      if (file.thumbnail_link) {
+        previewBody.innerHTML = `
+          <img src="${file.thumbnail_link}" alt="${file.name}" class="max-h-[300px] rounded-2xl object-contain shadow-md border border-border" />
+        `;
+      } else {
+        previewBody.innerHTML = `
+          <div class="text-center p-6 text-muted-foreground">
+            <div class="size-16 mx-auto mb-3 grid place-items-center rounded-2xl bg-surface-high">
+              ${getFileIcon(file)}
+            </div>
+            <p class="text-sm font-medium text-foreground">${file.name}</p>
+            <p class="text-xs mt-1">Direct embedded preview available in Google Drive.</p>
+          </div>
+        `;
+      }
+
+      document.getElementById('previewModal').classList.remove('hidden');
+      document.getElementById('previewModal').classList.add('grid');
+    }
+
+    function closePreview() {
+      document.getElementById('previewModal').classList.remove('grid');
+      document.getElementById('previewModal').classList.add('hidden');
+    }
+
+    // ================= ACTIONS =================
+    async function runOrganize(dryRun = true) {
+      const fileIds = Array.from(state.selectedFileIds);
+      const targetFiles = fileIds.length > 0 
+        ? state.files.filter(f => fileIds.includes(f.id))
+        : state.files;
+
+      if (targetFiles.length === 0) {
+        alert('No files available to organize.');
+        return;
+      }
+
+      // Populate simulation diff modal
+      document.getElementById('diffModalTitle').textContent = dryRun 
+        ? 'Simulation Preview (Dry-Run)' 
+        : 'Live Execution Planned Moves';
+      document.getElementById('diffModalBadge').textContent = dryRun ? 'Dry-Run Active' : 'Live Execution';
+      document.getElementById('diffModalBadge').className = dryRun
+        ? 'rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-xs font-medium text-emerald-600 dark:text-emerald-400'
+        : 'rounded-full bg-primary-container px-2.5 py-0.5 text-xs font-medium text-on-primary-container';
+
+      document.getElementById('diffSummaryCount').textContent = `${targetFiles.length} file moves prepared`;
+
+      const diffBody = document.getElementById('diffModalBody');
+      diffBody.innerHTML = targetFiles.map(f => `
+        <div class="flex items-center justify-between gap-3 rounded-2xl bg-surface-high p-3 text-xs">
+          <div class="flex items-center gap-2.5 min-w-0">
+            ${getFileIcon(f)}
+            <span class="truncate font-medium text-foreground">${f.name}</span>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <span class="text-muted-foreground text-[11px]">routes to</span>
+            <span class="rounded-full bg-background px-2.5 py-0.5 font-medium text-primary">
+              ${getTargetFolder(f)}
+            </span>
+          </div>
+        </div>
+      `).join('');
+
+      document.getElementById('diffModal').classList.remove('hidden');
+      document.getElementById('diffModal').classList.add('grid');
+
+      // Wire execute button
+      const confirmBtn = document.getElementById('confirmExecuteBtn');
+      confirmBtn.onclick = async () => {
+        confirmBtn.disabled = true;
+        confirmBtn.textContent = 'Processing moves...';
+        try {
+          const res = await fetch('/api/drive/organize', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              file_ids: fileIds.length > 0 ? fileIds : null,
+              dry_run: dryRun,
+              folder_id: 'root'
+            })
+          });
+          const result = await res.json();
+          alert(dryRun 
+            ? `Simulation complete! ${result.moves_planned || 0} moves planned with zero file modifications.`
+            : `Success! ${result.moves_executed || 0} files moved into organized folders.`
+          );
+          closeDiffModal();
+          loadScanData();
+          loadHistory();
+        } catch (err) {
+          alert('Organization error: ' + err.message);
+        } finally {
+          confirmBtn.disabled = false;
+          confirmBtn.textContent = 'Execute Live Moves';
+        }
+      };
+    }
+
+    function closeDiffModal() {
+      document.getElementById('diffModal').classList.remove('grid');
+      document.getElementById('diffModal').classList.add('hidden');
+    }
+
+    async function undoSession(sessionId) {
+      if (!confirm('Are you sure you want to restore these files back to their previous locations?')) return;
+      try {
+        const res = await fetch('/api/drive/undo', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ session_id: sessionId })
+        });
+        const result = await res.json();
+        alert(`Restoration complete! ${result.files_restored || 0} files restored.`);
+        loadScanData();
+        loadHistory();
+      } catch (err) {
+        alert('Undo failed: ' + err.message);
+      }
+    }
+
+    // ================= EVENT LISTENERS =================
+    document.addEventListener('DOMContentLoaded', () => {
+      // Theme Toggle
+      const themeBtn = document.getElementById('themeToggleBtn');
+      themeBtn.addEventListener('click', () => {
+        const isDark = document.documentElement.classList.toggle('dark');
+        localStorage.setItem('googlescanner-theme', isDark ? 'dark' : 'light');
+      });
+
+      // Scope Switcher
+      const scopeRoot = document.getElementById('scopeRootBtn');
+      const scopeRec = document.getElementById('scopeRecursiveBtn');
+      scopeRoot.addEventListener('click', () => {
+        state.isRecursive = false;
+        scopeRoot.className = 'rounded-full px-3 py-1 font-medium bg-background text-foreground shadow-xs transition-all';
+        scopeRec.className = 'rounded-full px-3 py-1 text-muted-foreground transition-all hover:text-foreground';
+        loadScanData();
+      });
+      scopeRec.addEventListener('click', () => {
+        state.isRecursive = true;
+        scopeRec.className = 'rounded-full px-3 py-1 font-medium bg-background text-foreground shadow-xs transition-all';
+        scopeRoot.className = 'rounded-full px-3 py-1 text-muted-foreground transition-all hover:text-foreground';
+        loadScanData();
+      });
+
+      // Simulation Switch
+      const simCheckbox = document.getElementById('simModeCheckbox');
+      simCheckbox.addEventListener('change', (e) => {
+        state.isDryRun = e.target.checked;
+        const badge = document.getElementById('simBadge');
+        if (state.isDryRun) {
+          badge.className = 'size-2 rounded-full bg-emerald-500 animate-pulse';
+        } else {
+          badge.className = 'size-2 rounded-full bg-amber-500';
+        }
+      });
+
+      // Tab Switcher
+      const tabs = [
+        { id: 'declutter', btn: 'tabBtnDeclutter', panel: 'panelDeclutter' },
+        { id: 'duplicates', btn: 'tabBtnDuplicates', panel: 'panelDuplicates' },
+        { id: 'photos', btn: 'tabBtnPhotos', panel: 'panelPhotos' },
+        { id: 'rollback', btn: 'tabBtnRollback', panel: 'panelRollback' },
+      ];
+
+      tabs.forEach(t => {
+        document.getElementById(t.btn).addEventListener('click', () => {
+          tabs.forEach(other => {
+            const btnEl = document.getElementById(other.btn);
+            const panelEl = document.getElementById(other.panel);
+            if (other.id === t.id) {
+              btnEl.className = 'tab-trigger inline-flex h-10 shrink-0 cursor-pointer items-center gap-2 rounded-full px-5 text-sm font-medium transition-all bg-primary-container text-on-primary-container';
+              panelEl.classList.remove('hidden');
+            } else {
+              btnEl.className = 'tab-trigger inline-flex h-10 shrink-0 cursor-pointer items-center gap-2 rounded-full px-5 text-sm font-medium text-muted-foreground hover:text-foreground transition-all';
+              panelEl.classList.add('hidden');
+            }
+          });
+          state.currentTab = t.id;
+        });
+      });
+
+      // Category Chips
+      document.querySelectorAll('.cat-chip').forEach(chip => {
+        chip.addEventListener('click', (e) => {
+          const cat = chip.getAttribute('data-cat');
+          state.selectedFilter = cat;
+          document.querySelectorAll('.cat-chip').forEach(c => {
+            c.className = 'cat-chip inline-flex h-8 items-center gap-1.5 rounded-lg border border-border bg-transparent text-muted-foreground px-3 text-xs font-medium hover:text-foreground';
+          });
+          chip.className = 'cat-chip inline-flex h-8 items-center gap-1.5 rounded-lg border px-3 text-xs font-medium transition-all bg-primary-container text-on-primary-container border-transparent';
+          renderTable();
+        });
+      });
+
+      // Search Bar
+      const searchInput = document.getElementById('searchInput');
+      const clearBtn = document.getElementById('clearSearchBtn');
+      searchInput.addEventListener('input', (e) => {
+        state.searchQuery = e.target.value.trim();
+        clearBtn.classList.toggle('hidden', state.searchQuery.length === 0);
+        renderTable();
+      });
+      clearBtn.addEventListener('click', () => {
+        searchInput.value = '';
+        state.searchQuery = '';
+        clearBtn.classList.add('hidden');
+        renderTable();
+      });
+
+      // Select All Checkbox
+      const selectAll = document.getElementById('selectAllCheckbox');
+      selectAll.addEventListener('change', (e) => {
+        if (e.target.checked) {
+          state.files.forEach(f => state.selectedFileIds.add(f.id));
+        } else {
+          state.selectedFileIds.clear();
+        }
+        renderTable();
+      });
+
+      // Action buttons
+      document.getElementById('previewRoutingBtn').addEventListener('click', () => runOrganize(true));
+      document.getElementById('executeRoutingBtn').addEventListener('click', () => runOrganize(false));
+      document.getElementById('quarantineAllBtn').addEventListener('click', () => runOrganize(state.isDryRun));
+      document.getElementById('organizePhotosBtn').addEventListener('click', () => runOrganize(state.isDryRun));
+      document.getElementById('quickUndoBtn').addEventListener('click', () => undoSession(null));
+
+      // Modals
+      document.getElementById('closeModalBtn').addEventListener('click', closePreview);
+      document.getElementById('modalCloseBtn2').addEventListener('click', closePreview);
+      document.getElementById('closeDiffBtn').addEventListener('click', closeDiffModal);
+      document.getElementById('cancelDiffBtn').addEventListener('click', closeDiffModal);
+
+      // Initial Fetch
+      loadStorage();
+      loadScanData();
+      loadHistory();
+    });
+  </script>
+</body>
+</html>
+"""
+
+with open("c:/Users/tejag/neat-workspace/static/index.html", "w", encoding="utf-8") as f:
+    f.write(ui_html)
+
+print("Saved static/index.html successfully!")
